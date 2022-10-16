@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "jobrundj": {
+      "commandName": "Project",
+      "commandLineArgs": "-j JobTest"
+    }
+  }
+}
