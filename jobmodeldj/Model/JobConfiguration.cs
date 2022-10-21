@@ -1,4 +1,5 @@
 ﻿using jobmodeldj.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace jobmodeldj.Model
 {
@@ -17,6 +18,15 @@ namespace jobmodeldj.Model
                 return candidateDLLName;
             }
         }
+        public string JobConfigurationJsonName
+        {
+            get
+            {
+                string candidateJsonName = string.Format("{0}.{1}", _id, Global.JSON_EXTENSION);
+                return candidateJsonName;
+            }
+        }
+        public IConfigurationRoot? Json { get; set; }
         public JobFile JobFileReference { get { return _jobFile; } set { this._jobFile = value; } }
         public DirectoryInfo AppDirectoryPath { get { return _appDirectoryPath; } }
         public DirectoryInfo JobsDirectoryPath { get { return _jobsDirectoryPath; } }
@@ -35,7 +45,7 @@ namespace jobmodeldj.Model
         private DirectoryInfo _externalDLLDirectoryPath;
         private string _executerFileName;
         private JobFile? _jobFile;
-
+        
         public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string dllTempDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath)
         {
             _args = args;

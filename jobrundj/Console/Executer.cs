@@ -7,6 +7,8 @@ using jobmodeldj.Model;
 using jobmodeldj.Utils;
 using CommandLine;
 using NLog;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace jobrundj.Console
 {
@@ -60,21 +62,42 @@ namespace jobrundj.Console
             if (jobfound)
             {
                 l.Debug("Start loading other assemblies..");
-                foreach (var a in conf.JobFileReference.OtherAssemblies)
+                foreach (string asse in conf.JobFileReference.OtherAssemblies)
                 {
-                    string extarnalAssemblyFullName = Path.Combine(conf.ExternalDLLDirectoryPath.FullName,a);
-                    Assembly assembly = Assembly.LoadFrom(extarnalAssemblyFullName);
-                    AppDomain.CurrentDomain.Load(assembly.GetName());
+                    if (!string.IsNullOrEmpty(asse))
+                    {
+                        string extarnalAssemblyFullName = Path.Combine(conf.ExternalDLLDirectoryPath.FullName, asse);
+                        Assembly assembly = Assembly.LoadFrom(extarnalAssemblyFullName);
+                        AppDomain.CurrentDomain.Load(assembly.GetName());
+                    }
                 }
                 l.Debug("End loading other assemblies");
-
-                job.MainExecute(conf);
             }
             else
             {
                 throw new Exception("Job not found");
             }
 
+            if (jobfound)
+            {
+                l.Debug("Start reading Configuration json..");
+                try
+                {
+                    var jobConfJson = new ConfigurationBuilder()
+                        .AddJsonFile(Path.Combine(conf.JobsDirectoryPath.FullName, conf.JobConfigurationJsonName), true)
+                        .Build();
+                    conf.Json = jobConfJson;
+                }
+                catch (Exception exconf)
+                {
+                    l.Debug("Configuration{0}",exconf.Message);
+                }
+            }
+
+            if (jobfound)
+            {
+                job.MainExecute(conf);
+            }
         }
 
         private static List<JobFile> _GetExternalJobs(string jobPath)

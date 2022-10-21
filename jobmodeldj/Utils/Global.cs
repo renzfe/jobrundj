@@ -10,6 +10,7 @@
         public const string TEMP_FOLDER_NAME = "temp";
         public const string REFERENCE_DLL_FOLDER_NAME = "externaldll";
         public const string DYNAMIC_LINKED_LIBRARY_EXTENSION = "dll";
+        public const string JSON_EXTENSION = "json";
         public const string TAG_FOR_EXTERNAL_ASSEMBLY = "jobrundjReferencedAssemblies";
         public const int JOBS_VERSION_RUNTIME = 2;
     }
