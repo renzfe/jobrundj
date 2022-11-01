@@ -1,7 +1,8 @@
-﻿using jobrundj.Console;
-using jobmodeldj.Model;
+﻿using jobmodeldj.Model;
 using jobmodeldj.Utils;
+using jobrundj.Console;
 using NLog;
+using System.Reflection;
 
 namespace jobrundj
 {
@@ -37,10 +38,15 @@ namespace jobrundj
                 externaldlljobsDirecoryPath = Path.Combine(appDirecoryPath, Global.REFERENCE_DLL_FOLDER_NAME);
                 l.Trace("externaldlljobsDirecoryPath={0}", externaldlljobsDirecoryPath);
 
-                JobConfiguration conf = new JobConfiguration(args, executerFileName, appDirecoryPath, jobDirecoryPath, dlljobsDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath);
+                string basePath = Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location);
+
+                JobConfiguration conf = new JobConfiguration(args, executerFileName, appDirecoryPath, jobDirecoryPath, dlljobsDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
                 conf.logConfig = LogManager.Configuration;
 
-                l.Info("Start {0} - runtime job version: {1}", executerFileName, Global.JOBS_VERSION_RUNTIME);
+                l.Info("Start {0} v{1} - jobs runtime v{2}", executerFileName, 
+                                                               System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, 
+                                                               Global.JOBS_RUNTIME_VERSION);
+
                 Executer.Execute(conf);
                 l.Info("{0}: EXIT 0", executerFileName);
                 System.Environment.Exit(0);

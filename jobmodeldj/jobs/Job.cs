@@ -26,9 +26,9 @@ namespace jobmodeldj.jobs
 
             try
             {
-                if (Global.JOBS_VERSION_RUNTIME != this.JobRuntimeVersion)
+                if (Global.JOBS_RUNTIME_VERSION != this.JobRuntimeVersion)
                 {
-                    throw new VersionException(this.JobRuntimeVersion, Global.JOBS_VERSION_RUNTIME);
+                    throw new VersionException(this.JobRuntimeVersion, Global.JOBS_RUNTIME_VERSION);
                 }
 
                 Execute(conf);

@@ -1,5 +1,6 @@
 ﻿using jobmodeldj.Utils;
 using Microsoft.Extensions.Configuration;
+using Microsoft.CodeAnalysis;
 
 namespace jobmodeldj.Model
 {
@@ -33,6 +34,7 @@ namespace jobmodeldj.Model
         public DirectoryInfo JobsTempDLLDirectoryPath { get { return _jobsTempDLLDirectoryPath; } }
         public DirectoryInfo TempDirectoryPath { get { return _tempDirectoryPath; } }
         public DirectoryInfo ExternalDLLDirectoryPath { get { return _externalDLLDirectoryPath; } }
+        public DirectoryInfo DotNetDirectoryPath { get { return _dotnetBasePath; } }
         public string ExecuterFileName { get { return _executerFileName; } }
         public NLog.Config.LoggingConfiguration? logConfig;
 
@@ -43,10 +45,11 @@ namespace jobmodeldj.Model
         private DirectoryInfo _jobsTempDLLDirectoryPath; 
         private DirectoryInfo _tempDirectoryPath;
         private DirectoryInfo _externalDLLDirectoryPath;
+        private DirectoryInfo _dotnetBasePath;
         private string _executerFileName;
         private JobFile? _jobFile;
         
-        public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string dllTempDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath)
+        public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string dllTempDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath, string dotnetBasePath)
         {
             _args = args;
             _executerFileName = executerFileName;
@@ -64,6 +67,8 @@ namespace jobmodeldj.Model
 
             _externalDLLDirectoryPath = new DirectoryInfo(externaldlljobsDirecoryPath);
             if (!_externalDLLDirectoryPath.Exists) _externalDLLDirectoryPath.Create();
+
+            _dotnetBasePath = new DirectoryInfo(dotnetBasePath);
         }
     }
 }

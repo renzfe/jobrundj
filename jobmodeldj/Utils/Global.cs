@@ -12,6 +12,6 @@
         public const string DYNAMIC_LINKED_LIBRARY_EXTENSION = "dll";
         public const string JSON_EXTENSION = "json";
         public const string TAG_FOR_EXTERNAL_ASSEMBLY = "jobrundjReferencedAssemblies";
-        public const int JOBS_VERSION_RUNTIME = 2;
+        public const int JOBS_RUNTIME_VERSION = 2;
     }
 }

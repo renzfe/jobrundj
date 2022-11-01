@@ -9,6 +9,7 @@ using CommandLine;
 using NLog;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using Microsoft.CodeAnalysis.Emit;
 
 namespace jobrundj.Console
 {
@@ -62,13 +63,15 @@ namespace jobrundj.Console
             if (jobfound)
             {
                 l.Debug("Start loading other assemblies..");
-                foreach (string asse in conf.JobFileReference.OtherAssemblies)
+                foreach (string assem in conf.JobFileReference.OtherAssemblies)
                 {
-                    if (!string.IsNullOrEmpty(asse))
+                    if (!string.IsNullOrEmpty(assem))
                     {
-                        string extarnalAssemblyFullName = Path.Combine(conf.ExternalDLLDirectoryPath.FullName, asse);
-                        Assembly assembly = Assembly.LoadFrom(extarnalAssemblyFullName);
+                        string externalAssemblyFullName = GetAssemblyFullPath(assem, conf.ExternalDLLDirectoryPath.FullName, conf.DotNetDirectoryPath.FullName);
+                        //AssemblyLoadContext.loadfrom
+                        Assembly assembly = Assembly.LoadFrom(externalAssemblyFullName);
                         AppDomain.CurrentDomain.Load(assembly.GetName());
+                        //AppDomain.CurrentDomain.Load()
                     }
                 }
                 l.Debug("End loading other assemblies");
@@ -120,7 +123,7 @@ namespace jobrundj.Console
             IJob oJob = null;
             string codeSourceString = conf.JobFileReference.JobSourceCode;
             l.Trace("source={0}", codeSourceString);
-            string basePath = Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location);
+            //string basePath = conf.DotNetDirectoryPath.FullName;
 
             var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp10);
             var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeSourceString, options);
@@ -128,7 +131,7 @@ namespace jobrundj.Console
             var references = new List<MetadataReference>
             {
                MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-                ,MetadataReference.CreateFromFile(Path.Combine(basePath, "netstandard.dll"))
+                ,MetadataReference.CreateFromFile(Path.Combine(conf.DotNetDirectoryPath.FullName, "netstandard.dll"))
                 //,MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Core.dll"))
                 //,MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Runtime.dll"))
                 //,MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Runtime.Extensions.dll"))
@@ -140,27 +143,34 @@ namespace jobrundj.Console
             {
                 if (!string.IsNullOrEmpty(assem))
                 {
-                    l.Debug("adding {0}..", Path.Combine(conf.AppDirectoryPath.FullName, assem));
-                    references.Add(MetadataReference.CreateFromFile(Path.Combine(conf.ExternalDLLDirectoryPath.FullName, assem)));
+                    FileInfo dllinExternalDllDir = new FileInfo(Path.Combine(conf.ExternalDLLDirectoryPath.FullName, assem));
+                    string assemblyFullPath = GetAssemblyFullPath(assem, conf.ExternalDLLDirectoryPath.FullName, conf.DotNetDirectoryPath.FullName);
+                    l.Debug("adding {0}..", assemblyFullPath);
+                    references.Add(MetadataReference.CreateFromFile(assemblyFullPath));
                 }
             }
             Assembly.GetEntryAssembly()?.GetReferencedAssemblies().ToList()
                 .ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
 
             var csCompilation = CSharpCompilation.Create(conf.JobFileReference.JobID, new[] { parsedSyntaxTree }, references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.AddReferences(references);
 
             using (var peStream = new MemoryStream())
             {
-                //var result = csCompilation.Emit(peStream); //IN MEMORY OPTION//
-                var result = csCompilation.Emit(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName));
+                var debugOptions = DebugInformationFormat.Embedded; // DebugInformationFormat.Pdb;
+                var result = csCompilation.Emit(peStream, options: new EmitOptions(debugInformationFormat: debugOptions)); //IN MEMORY OPTION//
+                //var result = csCompilation.Emit(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName));
 
                 if (result.Success)
                 {
                     l.Debug("Compiled {0} successfully",conf.JobID);
                     //AssemblyLoadContext assemblyContext = new AssemblyLoadContext(Path.GetRandomFileName(), true); //IN MEMORY OPTION//
                     AssemblyLoadContext assemblyContext = new AssemblyLoadContext(conf.JobFileReference.JobID, true);
+                    
                     //Assembly assembly = assemblyContext.LoadFromStream(peStream); //IN MEMORY OPTION//
-                    Assembly assembly = assemblyContext.LoadFromAssemblyPath(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName));
+                    Assembly assembly = Assembly.Load(((MemoryStream)peStream).ToArray());
+
+                    //Assembly assembly = assemblyContext.LoadFromAssemblyPath(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName));
 
                     var type = typeof(IJob);
                     Assembly[] assemblies = new Assembly[1];
@@ -218,6 +228,31 @@ namespace jobrundj.Console
                 }
             }
             return o;
+        }
+
+        private static string GetAssemblyFullPath(string assemblyName, string externalDLLDirectoryPath, string dotNetDirectoryPath)
+        {
+            string fullPath = string.Empty;
+            FileInfo f = new FileInfo(Path.Combine(externalDLLDirectoryPath, assemblyName));
+            if (f.Exists)
+            {
+                fullPath = f.FullName;
+            }
+            else
+            {
+                f = new FileInfo(Path.Combine(dotNetDirectoryPath, assemblyName));
+                if (f.Exists)
+                {
+                    fullPath = f.FullName;
+                }
+            }
+
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                throw new Exception($"{assemblyName} not found");
+            } 
+
+            return fullPath;
         }
     }
 }
