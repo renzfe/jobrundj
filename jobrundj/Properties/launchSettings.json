@@ -1,8 +1,19 @@
 {
   "profiles": {
     "jobrundj": {
+      "commandName": "Project"
+    },
+    "Test Job Postgre": {
       "commandName": "Project",
       "commandLineArgs": "-j JobPostgre"
+    },
+    "Test Job Test": {
+      "commandName": "Project",
+      "commandLineArgs": "-j JobTest"
+    },
+    "Test Job DBConn": {
+      "commandName": "Project",
+      "commandLineArgs": "-j JobDBConn"
     }
   }
 }

@@ -31,7 +31,6 @@ namespace jobmodeldj.Model
         public JobFile JobFileReference { get { return _jobFile; } set { this._jobFile = value; } }
         public DirectoryInfo AppDirectoryPath { get { return _appDirectoryPath; } }
         public DirectoryInfo JobsDirectoryPath { get { return _jobsDirectoryPath; } }
-        public DirectoryInfo JobsTempDLLDirectoryPath { get { return _jobsTempDLLDirectoryPath; } }
         public DirectoryInfo TempDirectoryPath { get { return _tempDirectoryPath; } }
         public DirectoryInfo ExternalDLLDirectoryPath { get { return _externalDLLDirectoryPath; } }
         public DirectoryInfo DotNetDirectoryPath { get { return _dotnetBasePath; } }
@@ -49,7 +48,7 @@ namespace jobmodeldj.Model
         private string _executerFileName;
         private JobFile? _jobFile;
         
-        public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string dllTempDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath, string dotnetBasePath)
+        public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath, string dotnetBasePath)
         {
             _args = args;
             _executerFileName = executerFileName;
@@ -58,9 +57,6 @@ namespace jobmodeldj.Model
 
             _jobsDirectoryPath = new DirectoryInfo(jobsDirectoryPath);
             if (!_jobsDirectoryPath.Exists) _jobsDirectoryPath.Create();
-
-            _jobsTempDLLDirectoryPath = new DirectoryInfo(dllTempDirectoryPath);
-            if (!_jobsTempDLLDirectoryPath.Exists) _jobsTempDLLDirectoryPath.Create();
 
             _tempDirectoryPath = new DirectoryInfo(tempDirectoryPath);
             if (!_tempDirectoryPath.Exists) _tempDirectoryPath.Create();

@@ -1,8 +1,8 @@
 ﻿using jobmodeldj.Model;
 using jobmodeldj.Utils;
 using jobrundj.Console;
-using NLog;
 using System.Reflection;
+using NLog;
 
 namespace jobrundj
 {
@@ -14,7 +14,6 @@ namespace jobrundj
             string executerFileName = string.Empty;
             string appDirecoryPath = string.Empty;
             string jobDirecoryPath = string.Empty;
-            string dlljobsDirecoryPath = string.Empty;
             string externaldlljobsDirecoryPath = string.Empty;
             string tmpDirecoryPath = string.Empty;
 
@@ -29,9 +28,6 @@ namespace jobrundj
                 jobDirecoryPath = Path.Combine(appDirecoryPath, Global.JOBS_FOLDER_NAME);
                 l.Trace("jobDirecoryPath={0}", jobDirecoryPath);
 
-                dlljobsDirecoryPath = Path.Combine(appDirecoryPath, Global.JOBSTEMPDLL_FOLDER_NAME);
-                l.Trace("dlljobsDirecoryPath={0}", dlljobsDirecoryPath);
-
                 tmpDirecoryPath = Path.Combine(appDirecoryPath, Global.TEMP_FOLDER_NAME);
                 l.Trace("tmpDirecoryPath={0}", tmpDirecoryPath);
 
@@ -40,14 +36,15 @@ namespace jobrundj
 
                 string basePath = Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location);
 
-                JobConfiguration conf = new JobConfiguration(args, executerFileName, appDirecoryPath, jobDirecoryPath, dlljobsDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
+                JobConfiguration conf = new JobConfiguration(args, executerFileName, appDirecoryPath, jobDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
                 conf.logConfig = LogManager.Configuration;
 
                 l.Info("Start {0} v{1} - jobs runtime v{2}", executerFileName, 
                                                                System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, 
                                                                Global.JOBS_RUNTIME_VERSION);
 
-                Executer.Execute(conf);
+                Executer executer = new Executer(conf);
+                executer.Execute();
                 l.Info("{0}: EXIT 0", executerFileName);
                 System.Environment.Exit(0);
             }
