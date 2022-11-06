@@ -66,7 +66,7 @@ namespace jobmodeldj.jobs
 
 # jobrundj.exe / jobrundj.dll
 
-jobrundj is a the Console Application to execute a job.
+jobrundj is the Console Application to execute a job.
 
 ## How to Merge PDF
 
