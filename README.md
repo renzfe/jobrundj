@@ -14,6 +14,7 @@ Download link: <https://github.com/renzfe/jobrundj/releases>
 - Variable l is a NLog.Logger
 - The argument conf contains configuration references
 - It can be add a [JobName].json file to save custom configurations (connection strings, etc)
+- The docs/JobExamples folder contains some job for test
 
 ```c#
 //<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>  
