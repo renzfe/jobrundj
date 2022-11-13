@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace jobrundj.Console
 {
-    internal class Options
+    public class Options
     {
         [Option('j', "job", Required = true, HelpText = "Set job to run.")]
         public string JobName { get; set; }

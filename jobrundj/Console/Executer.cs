@@ -31,18 +31,6 @@ namespace jobrundj.Console
         }
         public void Execute()
         {
-            l.Debug("Parsing argument job..");
-            Parser.Default.ParseArguments<Options>(conf.JobArgs)
-                   .WithParsed<Options>(o =>
-                   {
-                       l.Info($"Configuring job to run: {o.JobName}");
-                       conf.JobID = o.JobName;
-                       ExecuteJobName();
-                   });
-        }
-
-        private void ExecuteJobName()
-        {
             IJob job = null;
             bool jobfound = false;
 

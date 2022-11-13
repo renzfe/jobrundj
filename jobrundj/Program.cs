@@ -3,6 +3,7 @@ using jobmodeldj.Utils;
 using jobrundj.Console;
 using System.Reflection;
 using NLog;
+using CommandLine;
 
 namespace jobrundj
 {
@@ -16,7 +17,8 @@ namespace jobrundj
             string jobDirecoryPath = string.Empty;
             string externaldlljobsDirecoryPath = string.Empty;
             string tmpDirecoryPath = string.Empty;
-
+            string jobName = string.Empty;
+            
             try
             {
                 executerFileName = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
@@ -36,15 +38,33 @@ namespace jobrundj
 
                 string basePath = Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location);
 
-                JobConfiguration conf = new JobConfiguration(args, executerFileName, appDirecoryPath, jobDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
-                conf.logConfig = LogManager.Configuration;
-
                 l.Info("Start {0} v{1} - jobs runtime v{2}", executerFileName, 
                                                                System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, 
                                                                Global.JOBS_RUNTIME_VERSION);
 
-                Executer executer = new Executer(conf);
-                executer.Execute();
+                l.Debug("Parsing argument job..");
+                var parser = new Parser(settings =>
+                {
+                    settings.IgnoreUnknownArguments = true;
+                });
+                parser.ParseArguments<Options>(args)
+                        .WithParsed(o =>
+                        {
+                            jobName = o.JobName;
+                        })
+                        .WithNotParsed(HandleParseError);
+                
+                if (!string.IsNullOrEmpty(jobName))
+                {
+                    JobConfiguration conf = new JobConfiguration(jobName, args, executerFileName, appDirecoryPath, jobDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
+                    conf.logConfig = LogManager.Configuration;
+
+                    l.Info($"Configuring job to run: {conf.JobID}");
+
+                    Executer executer = new Executer(conf);
+                    executer.Execute();
+                }
+
                 l.Info("{0}: EXIT 0", executerFileName);
                 System.Environment.Exit(0);
             }
@@ -54,6 +74,16 @@ namespace jobrundj
                 l.Warn("{0}: EXIT 1", executerFileName);
                 System.Environment.Exit(1);
             }
+
+            static void HandleParseError(IEnumerable<Error> errs)
+            {
+                foreach (var err in errs)
+                {
+                    l.Error(err.Tag);
+                }
+                throw new Exception("Command line parser exception");
+            }
+
         }
     }
 }

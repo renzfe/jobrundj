@@ -10,7 +10,7 @@ namespace jobmodeldj.Model
     public class JobConfiguration
     {
         public string[] JobArgs { get { return _args; } }
-        public string JobID { get { return _id; } set { this._id = value; } }
+        public string JobID { get { return _id; } }
         public string JobAssembyName 
         {
             get 
@@ -48,8 +48,9 @@ namespace jobmodeldj.Model
         private string _executerFileName;
         private JobFile? _jobFile;
         
-        public JobConfiguration(string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath, string dotnetBasePath)
+        public JobConfiguration(string jobId, string[] args, string executerFileName, string appDirectoryPath, string jobsDirectoryPath, string tempDirectoryPath, string externaldlljobsDirecoryPath, string dotnetBasePath)
         {
+            _id = jobId;
             _args = args;
             _executerFileName = executerFileName;
             _appDirectoryPath = new DirectoryInfo(appDirectoryPath);
