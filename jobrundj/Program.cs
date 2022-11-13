@@ -61,8 +61,8 @@ namespace jobrundj
 
                     l.Info($"Configuring job to run: {conf.JobID}");
 
-                    Executer executer = new Executer(conf);
-                    executer.Execute();
+                    JobRunner jobrunner = new JobRunner(conf);
+                    jobrunner.Run();
                 }
 
                 l.Info("{0}: EXIT 0", executerFileName);
@@ -70,7 +70,7 @@ namespace jobrundj
             }
             catch (Exception ex)
             {
-                l.Error("Errore={0}", ex.Message);
+                l.Error("Error={0}", ex.Message);
                 l.Warn("{0}: EXIT 1", executerFileName);
                 System.Environment.Exit(1);
             }

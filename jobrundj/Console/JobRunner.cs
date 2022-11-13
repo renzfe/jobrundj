@@ -19,23 +19,23 @@ namespace jobrundj.Console
     /// <summary>
     /// Class to execute the job
     /// </summary>
-    class Executer
+    class JobRunner
     {
         private static Logger l = LogManager.GetCurrentClassLogger();
         private JobConfiguration conf = null;
         private ReferenceList References { get; } = new ReferenceList();
         public NamespaceList Namespaces { get; } = new NamespaceList();
-        public Executer(JobConfiguration config)
+        public JobRunner(JobConfiguration config)
         {
             conf= config;
         }
-        public void Execute()
+        public void Run()
         {
             IJob job = null;
             bool jobfound = false;
 
             l.Debug("Loading jobs from .cs file..");
-            List<JobFile> externalJobsFiles = GetExternalJobs(conf.JobsDirectoryPath.FullName);
+            List<JobFile> externalJobsFiles = GetExternalJobs();
             l.Debug("Looking for cs file to compile..");
             foreach (JobFile jobFile in externalJobsFiles)
             {
@@ -98,10 +98,10 @@ namespace jobrundj.Console
             }
         }
 
-        private static List<JobFile> GetExternalJobs(string jobPath)
+        private List<JobFile> GetExternalJobs()
         {
             List<JobFile> list = new List<JobFile>();
-            DirectoryInfo dllDir = new DirectoryInfo(jobPath);
+            DirectoryInfo dllDir = new DirectoryInfo(conf.JobsDirectoryPath.FullName);
             FileInfo[] files = dllDir.GetFiles("*.cs");
             
             foreach (FileInfo f in files)
