@@ -68,8 +68,6 @@ namespace jobmodeldj.jobs
 
 jobrundj is the Console Application to execute a job.
 
-## How to Merge PDF
-
 On Windows OS:
 
 **`jobrundj.exe`** **`-j`** `JobName`  
