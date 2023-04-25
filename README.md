@@ -82,7 +82,7 @@ On Linux or Mac OS:
 
 ## v1.5.0 Release date: 2023-04-25
 
-- Upgrade to donet 7.0 
+- Upgrade to dotnet 7.0 
 - Runtime jobfile version v3
 
 
