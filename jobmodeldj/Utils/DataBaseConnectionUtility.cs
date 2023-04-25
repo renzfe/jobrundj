@@ -10,8 +10,9 @@ namespace jobmodeldj.Utils
 {
     public class DataBaseConnectionUtility : IDisposable
     {
-        public static readonly string FACTORY_SQLSERVER = "System.Data.SqlClient";
+        public static readonly string FACTORY_SQLSERVER = "Microsoft.Data.SqlClient";
         public static readonly string FACTORY_ORACLE = "System.Data.OracleClient";
+        public static readonly string FACTORY_SQLITE = "Microsoft.Data.Sqlite";
 
         public static DataBaseConnectionUtility CreateAndOpenConnection(string connectionString, string factoryString)
         {
@@ -22,7 +23,16 @@ namespace jobmodeldj.Utils
 
         public static DataBaseConnectionUtility CreateAndOpenConnectionForSQL(string connectionString)
         {
+            DbProviderFactories.RegisterFactory("Microsoft.Data.SqlClient", "Microsoft.Data.SqlClient.SqlClientFactory, Microsoft.Data.SqlClient, Version=5.0.0.0");
             DataBaseConnectionUtility dbu = new DataBaseConnectionUtility(connectionString, FACTORY_SQLSERVER);
+            dbu.OpenConnection();
+            return dbu;
+        }
+        public static DataBaseConnectionUtility CreateAndOpenConnectionForSqlite(string connectionString)
+        {
+            //DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", Microsoft.Data.Sqlite.SqliteFactory.Instance);
+            DbProviderFactories.RegisterFactory("Microsoft.Data.Sqlite", "Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite, Version=7.0.0.0");
+            DataBaseConnectionUtility dbu = new DataBaseConnectionUtility(connectionString, FACTORY_SQLITE);
             dbu.OpenConnection();
             return dbu;
         }

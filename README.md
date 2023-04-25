@@ -3,7 +3,7 @@
 
 is a tool to run C# scripts.  
 
-It is written and runs on .NET 6.0 Framework on Windows, Linux and Mac OS.
+It is written and runs on .NET 7.0 Framework on Windows, Linux and Mac OS.
 
 Download link: <https://github.com/renzfe/jobrundj/releases>
 
@@ -27,7 +27,7 @@ namespace jobmodeldj.jobs
 
     class JobTest : Job  
     {  
-        public override int JobRuntimeVersion { get { return 2; } }  
+        public override int JobRuntimeVersion { get { return 3; } }  
   
         public override void Execute(JobConfiguration conf) 
         {
@@ -77,7 +77,24 @@ On Linux or Mac OS:
 
 **`dotnet jobrundj.dll`** **`-j`** `JobName`  
 
-License
+# Release notes
+
+
+## v1.5.0 Release date: 2023-04-25
+
+- Upgrade to donet 7.0 
+- Runtime jobfile version v3
+
+
+## v1.3.0 Release date: 2022-11-06
+
+- Extend Options class to implement specific argument in your job
+
+
+## v1.1.0 Release date: 2022-11-06
+
+- This is the first stable release.
+
 
 ---
 The license of the project is the [MIT](LICENSE).

@@ -7,7 +7,7 @@ namespace jobmodeldj.jobs
 {
     class JobTest : Job
     {
-        public override int JobRuntimeVersion { get { return 2; } }
+        public override int JobRuntimeVersion { get { return 3; } }
         
         public override void Execute(JobConfiguration conf) 
         {
