@@ -86,7 +86,7 @@ On Linux or Mac OS:
 - Runtime jobfile version v3
 
 
-## v1.3.0 Release date: 2022-11-06
+## v1.3.0 Release date: 2022-11-13
 
 - Extend Options class to implement specific argument in your job
 
