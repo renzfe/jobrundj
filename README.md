@@ -52,7 +52,7 @@ namespace jobmodeldj.jobs
             }
             catch (Exception ex)
             {
-                l.Error("errore {0} - {1}", JobID, ex.Message);
+                l.Error("error {0} - {1}", JobID, ex.Message);
                 throw ex;
             }
             finally
