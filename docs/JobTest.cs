@@ -23,7 +23,7 @@ namespace jobmodeldj.jobs
                 l.Info("conf.JobFileReference.JobFileInfo.FullName={0}", conf.JobFileReference.JobFileInfo.FullName);
                 l.Info("conf.JobID={0}", conf.JobID);
                 l.Info("conf.JobsDirectoryPath={0}", conf.JobsDirectoryPath);
-                l.Info("conf.JobsTempDLLDirectoryPath={0}", conf.JobsTempDLLDirectoryPath);
+                //l.Info("conf.JobsTempDLLDirectoryPath={0}", conf.JobsTempDLLDirectoryPath);
                 l.Info("conf.TempDirectoryPath={0}", conf.TempDirectoryPath);
                 l.Info("ConnectionString={0}", conf.Json?["ConnectionString"]);
                 l.Info("Params:LevelOne:LevelTwo={0}", conf.Json?["Params:LevelOne:LevelTwo"]);
