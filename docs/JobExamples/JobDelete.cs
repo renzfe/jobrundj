@@ -12,7 +12,7 @@ namespace jobmodeldj.jobs
         private int FilesDeleted = 0;
         private int FilesParsed = 0;
 		
-        public override int JobRuntimeVersion { get { return 3; } }
+        public override int JobRuntimeVersion { get { return 4; } }
         
         public override void Execute(JobConfiguration conf) 
         {
