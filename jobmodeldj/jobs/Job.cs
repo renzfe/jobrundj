@@ -16,13 +16,14 @@ namespace jobmodeldj.jobs
             } 
         }
         public abstract int JobRuntimeVersion { get; }
+        public virtual int Version { get { return 1; } }
         protected Logger l = LogManager.GetCurrentClassLogger();
         public abstract void Execute(JobConfiguration conf);
 
         public void MainExecute(JobConfiguration conf)
         {
             l = LogManager.GetLogger(GetType().FullName);
-            l.Info("############# START JOB:{0} ##########", conf.JobID);
+            l.Info("############# START JOB:{0} v{1} ##########", conf.JobID, this.Version);
 
             try
             {

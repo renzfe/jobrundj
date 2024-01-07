@@ -27,7 +27,8 @@ namespace jobmodeldj.jobs
 
     class JobTest : Job  
     {  
-        public override int JobRuntimeVersion { get { return 3; } }  
+        public override int JobRuntimeVersion { get { return 4; } }  
+        public int Version { get { return 1; } }
   
         public override void Execute(JobConfiguration conf) 
         {
@@ -78,6 +79,10 @@ On Linux or Mac OS:
 **`dotnet jobrundj.dll`** **`-j`** `JobName`  
 
 # Release notes
+
+## v2.1.0 Release date: 20234-01-07
+
+- Intrduce job Version to version specific job 
 
 ## v2.0.0 Release date: 2023-12-29
 

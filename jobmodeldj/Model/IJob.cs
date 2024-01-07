@@ -11,9 +11,14 @@
         string JobID { get; }
 
         /// <summary>
-        /// job version
+        /// job runtime version
         /// </summary>
         int JobRuntimeVersion { get; }
+
+        /// <summary>
+        /// specific job version
+        /// </summary>
+        int Version { get; }
 
         /// <summary>
         /// job execute method
