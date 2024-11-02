@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
+using MySqlConnector;
 
 namespace jobmodeldj.Utils
 {
@@ -13,6 +9,7 @@ namespace jobmodeldj.Utils
         public static readonly string FACTORY_SQLSERVER = "Microsoft.Data.SqlClient";
         public static readonly string FACTORY_ORACLE = "System.Data.OracleClient";
         public static readonly string FACTORY_SQLITE = "Microsoft.Data.Sqlite";
+        public static readonly string FACTORY_MYSQL = "MySqlConnector";
 
         public static DataBaseConnectionUtility CreateAndOpenConnection(string connectionString, string factoryString)
         {
@@ -43,6 +40,16 @@ namespace jobmodeldj.Utils
             dbu.OpenConnection();
             return dbu;
         }
+
+        public static DataBaseConnectionUtility CreateAndOpenConnectionForMySql(string connectionString)
+        {
+
+            DbProviderFactories.RegisterFactory(FACTORY_MYSQL, MySqlConnectorFactory.Instance);
+            DataBaseConnectionUtility dbu = new DataBaseConnectionUtility(connectionString, FACTORY_MYSQL);
+            dbu.OpenConnection();
+            return dbu;
+        }
+
 
         public string ConnectionString { get { return _connectionString; } }
         //public DbProviderFactory DbProviderFactory { get { return _providerFactory; } }
@@ -75,6 +82,73 @@ namespace jobmodeldj.Utils
                 odadpt = null;
             }
             return ods;
+        }
+        public DataTable DoReaderAsDataTable(string query)
+        {
+            DataTable odt = new DataTable();
+
+            if (_providerFactory != null)
+            {
+                DbCommand cmd = dbConnection.CreateCommand();
+                if (currentTransaction != null)
+                    cmd.Transaction = currentTransaction;
+                cmd.CommandText = query;
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    odt.Load(reader);
+                }
+            }
+
+            return odt;
+        }
+        public DataTable DoReader(string query)
+        {
+            DataTable odt = null;
+            int rowsNum = -1;
+            int colsNum = 0;
+
+            if (_providerFactory != null)
+            {
+                DbCommand cmd = dbConnection.CreateCommand();
+                if (currentTransaction != null)
+                    cmd.Transaction = currentTransaction;
+                cmd.CommandText = query;
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    odt = new DataTable();
+                    colsNum = reader.FieldCount;
+                    for (int c = 0; c < colsNum; c++)
+                    {
+                        string colName = reader.GetName(c);
+                        Type colType = reader.GetFieldType(c);
+                        odt.Columns.Add(colName, colType);
+                    }
+
+                    while (reader.Read())
+                    {
+                        DataRow row = odt.NewRow();
+                        for (int c = 0; c < colsNum; c++)
+                        {
+                            string colName = reader.GetName(c);
+                            Type colType = reader.GetFieldType(c);
+                            if (colType == typeof(string))
+                            {
+                                row[c] = reader.GetString(c);
+                            }
+                            else
+                            {
+                                row[c] = reader.GetString(c);
+                            }
+                        }
+
+                        odt.Rows.Add(row);
+                    }
+                }
+
+            }
+            return odt;
         }
 
         public int ExecCommand(string query)
