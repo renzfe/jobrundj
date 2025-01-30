@@ -80,7 +80,7 @@ On Linux or Mac OS:
 
 # Release notes
 
-## v2.1.0 Release date: 20234-01-07
+## v2.1.0 Release date: 2024-01-07
 
 - Intrduce job Version to version specific job 
 
