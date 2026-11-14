@@ -3,7 +3,7 @@
 
 is a tool to run C# scripts.  
 
-It is written and runs on .NET 8.0 Framework on Windows, Linux and Mac OS.
+It is written and runs on .NET 10.0 Framework on Windows, Linux and Mac OS.
 
 Download link: <https://github.com/renzfe/jobrundj/releases>
 
@@ -80,7 +80,15 @@ On Linux or Mac OS:
 
 # Release notes
 
-## v2.1.0 Release date: 20234-01-07
+## v2.3.0 Release date: 2026-11-14
+
+- Upgrade to dotnet 10.0 
+
+## v2.2.0 Release date: 
+
+- - 
+
+## v2.1.0 Release date: 2023-01-07
 
 - Intrduce job Version to version specific job 
 
