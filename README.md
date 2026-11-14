@@ -84,10 +84,6 @@ On Linux or Mac OS:
 
 - Upgrade to dotnet 10.0 
 
-## v2.2.0 Release date: 
-
-- - 
-
 ## v2.1.0 Release date: 2023-01-07
 
 - Intrduce job Version to version specific job 
