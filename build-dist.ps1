@@ -51,8 +51,11 @@ Write-Host "Publishing $name ..."
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 # sample jobs + guide
-Copy-Item (Join-Path $root "docs\JobExamples\*") (Join-Path $outDir "jobs") -Force
-Copy-Item (Join-Path $root "jobrundj\dist\README.md") (Join-Path $outDir "README.md") -Force
+Copy-Item (Join-Path $root "docs\JobExamples\JobTest.*") (Join-Path $outDir "jobs") -Force
+Copy-Item (Join-Path $root "jobrundj\dist\DEVELOPER_GUIDE.md") (Join-Path $outDir "DEVELOPER_GUIDE.md") -Force
+# context files for AI assistants (AGENTS.md: shared standard, CLAUDE.md: imports it for Claude Code)
+Copy-Item (Join-Path $root "jobrundj\dist\AGENTS.md") (Join-Path $outDir "AGENTS.md") -Force
+Copy-Item (Join-Path $root "jobrundj\dist\CLAUDE.md") (Join-Path $outDir "CLAUDE.md") -Force
 New-Item -ItemType Directory -Force (Join-Path $outDir "externaldll") | Out-Null
 
 Compress-Archive -Path $outDir -DestinationPath $zipFile

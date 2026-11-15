@@ -19,6 +19,21 @@
       "justMyCode": true
     },
     {
+      // Same as above, but asks for the job arguments (e.g.: -p C:\temp -a 30 -s)
+      "name": "Debug current job file (with arguments)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/jobrundj.dll",
+      "windows": {
+        "program": "${workspaceFolder}/jobrundj.exe"
+      },
+      "args": "-j ${fileBasenameNoExtension} -d \"${fileDirname}\" ${input:jobArgs}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": true
+    },
+    {
       "name": "Debug job by name",
       "type": "coreclr",
       "request": "launch",
@@ -42,6 +57,12 @@
     }
   ],
   "inputs": [
+    {
+      "id": "jobArgs",
+      "type": "promptString",
+      "description": "Job arguments (they are passed to the job in conf.JobArgs)",
+      "default": ""
+    },
     {
       "id": "jobName",
       "type": "promptString",

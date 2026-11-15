@@ -16,6 +16,19 @@
       "justMyCode": false
     },
     {
+      // Same as above, but asks for the job arguments (e.g.: -p C:\temp -a 30 -s)
+      "name": "Debug current job file (with arguments)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/jobrundj/bin/Debug/net10.0/jobrundj.dll",
+      "args": "-j ${fileBasenameNoExtension} -d \"${fileDirname}\" ${input:jobArgs}",
+      "cwd": "${workspaceFolder}/jobrundj/bin/Debug/net10.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": false
+    },
+    {
       // Asks for the job name; jobs are taken from the "jobs" folder next to jobrundj.dll
       "name": "Debug job by name",
       "type": "coreclr",
@@ -38,6 +51,12 @@
     }
   ],
   "inputs": [
+    {
+      "id": "jobArgs",
+      "type": "promptString",
+      "description": "Job arguments (they are passed to the job in conf.JobArgs)",
+      "default": ""
+    },
     {
       "id": "jobName",
       "type": "promptString",

@@ -1,11 +1,12 @@
 
 # jobrundj
 
+**English** | [Italiano](README.it.md) | [Español](README.es.md) | [Français](README.fr.md) | [Deutsch](README.de.md)
+
 is a tool to run C# scripts.  
 
 It is written and runs on .NET 10.0 Framework on Windows, Linux and Mac OS.
 
-Download link: <https://github.com/renzfe/jobrundj/releases>
 
 - Scripts are called jobs. Every job is a .cs file saved in .\jobs folder.  
 - The job must contain a class that extends jobmodeldj.jobs.Job.  
@@ -81,7 +82,7 @@ On Linux or Mac OS:
 
 # Debugging jobs in Visual Studio Code
 
-The distribution contains a ready-to-use `.vscode` folder.
+The distribution contains a ready-to-use `.vscode` folder. Full instructions (debug configurations, job arguments, troubleshooting) are in the [guide for job developers](jobrundj/dist/DEVELOPER_GUIDE.md#debugging-in-vs-code).
 
 1. Install [VS Code](https://code.visualstudio.com/) and the **C#** extension (`ms-dotnettools.csharp`).
 2. Open the jobrundj folder (the one containing `jobrundj.exe` / `jobrundj.dll`) in VS Code.
@@ -89,6 +90,7 @@ The distribution contains a ready-to-use `.vscode` folder.
 
 Other configurations:
 
+- *Debug current job file (with arguments)*: asks for the job arguments.
 - *Debug job by name*: asks for the job name.
 - *Attach to jobrundj*: start `jobrundj -j JobName --debug` (it waits for a debugger), then attach to the process.
 
@@ -99,6 +101,33 @@ Command line options:
 - `--debug` compile the job with debug symbols and wait for a debugger to attach
 
 `jobs/jobs.csproj` is used only by VS Code for IntelliSense (requires the .NET SDK); it is not needed to run the jobs.
+
+# Installation (running jobs only)
+
+This section is for those who only **run** jobs, for example on a server. You don't need VS Code or the .NET SDK.
+
+1. Install the [.NET 10 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (the *.NET Runtime* is enough).
+2. Download `jobrundj-<version>.zip` from the [releases page](https://github.com/renzfe/jobrundj/releases) and extract it. Move the content of the `jobrundj-<version>` folder to the installation folder, for example `C:\jobrundj` or `/opt/jobrundj`.
+3. Copy into the `jobs` folder the job files you received (`MyJob.cs` and, if present, `MyJob.json`). Copy any extra .dll required by the jobs into `externaldll`.
+4. Run the job:
+   - Windows: `C:\jobrundj\jobrundj.exe -j MyJob`
+   - Linux / macOS: `dotnet /opt/jobrundj/jobrundj.dll -j MyJob`
+5. Check the result: exit code `0` = success, `1` = error. Logs are written in the `logs` folder; their format and destination can be changed in `NLog.config`.
+
+To run a job automatically, schedule the command:
+
+- Windows (Task Scheduler), every day at 06:00:
+  `schtasks /Create /TN "jobrundj MyJob" /TR "C:\jobrundj\jobrundj.exe -j MyJob" /SC DAILY /ST 06:00`
+- Linux / macOS (crontab), every day at 06:00:
+  `0 6 * * * dotnet /opt/jobrundj/jobrundj.dll -j MyJob`
+
+The `.vscode` folder, `jobs/jobs.csproj`, the guide `DEVELOPER_GUIDE.md` and the AI context files `AGENTS.md` / `CLAUDE.md` are only needed to develop jobs and can be ignored.
+
+**Updating to a new version:** copy the content of the new `jobrundj-<version>` folder over the installation folder. Your jobs in `jobs` and the .dll in `externaldll` are kept; if you changed `NLog.config`, don't overwrite it.
+
+# Developing jobs
+
+🛠️ **If you write or debug jobs, follow the [guide for job developers](jobrundj/dist/DEVELOPER_GUIDE.md).** It explains how to set up VS Code, write a job, debug it step by step and contains a complete example (a job that exports a database query to a CSV file). The same guide is included as `DEVELOPER_GUIDE.md` in the distribution package.
 
 # Release notes
 
