@@ -1,10 +1,4 @@
-﻿using CommandLine.Text;
-using CommandLine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CommandLine;
 
 namespace jobrundj.Console
 {
@@ -12,5 +6,11 @@ namespace jobrundj.Console
     {
         [Option('j', "job", Required = true, HelpText = "Set job to run.")]
         public string JobName { get; set; }
+
+        [Option('d', "jobsdir", Required = false, HelpText = "Override the jobs folder (default: <app folder>/jobs).")]
+        public string? JobsDirectory { get; set; }
+
+        [Option("debug", Required = false, Default = false, HelpText = "Compile the job with debug symbols and wait for a debugger to attach.")]
+        public bool Debug { get; set; }
     }
 }

@@ -1,0 +1,7 @@
+{
+  // hide IntelliSense build output of the jobs folder
+  "files.exclude": {
+    "jobs/bin": true,
+    "jobs/obj": true
+  }
+}

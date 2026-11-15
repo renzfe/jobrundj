@@ -1,0 +1,37 @@
+<!--
+  IntelliSense-only project for the jobs folder.
+  It is NOT needed to run jobs (jobrundj compiles every job .cs file at runtime)
+  and it is never built by jobrundj: it only lets VS Code (C# extension) resolve
+  Job, JobConfiguration, NLog, etc. while you edit your jobs.
+  Requires the .NET SDK to be installed for IntelliSense; debugging works without it.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <LangVersion>10.0</LangVersion>
+    <!-- jobs are compiled without implicit usings / nullable: keep the editor consistent -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- jobrundj runtime assemblies (in the parent folder) -->
+    <Reference Include="..\jobmodeldj.dll" Private="false" />
+    <Reference Include="..\jobrundj.dll" Private="false" />
+    <Reference Include="..\NLog.dll" Private="false" />
+    <Reference Include="..\MySqlConnector.dll" Private="false" />
+    <Reference Include="..\CommandLine.dll" Private="false" />
+    <Reference Include="..\Microsoft.Extensions.Configuration*.dll" Private="false" />
+    <!-- assemblies declared in <jobrundjReferencedAssemblies> and copied in externaldll -->
+    <Reference Include="..\externaldll\*.dll" Private="false" />
+  </ItemGroup>
+
+</Project>

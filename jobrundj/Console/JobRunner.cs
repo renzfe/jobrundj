@@ -10,6 +10,8 @@ using NLog;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
+using System.Text;
 using System.Xml.Linq;
 using System.Data.Common;
 using System.Data;
@@ -23,11 +25,13 @@ namespace jobrundj.Console
     {
         private static Logger l = LogManager.GetCurrentClassLogger();
         private JobConfiguration conf = null;
+        private readonly bool debugMode;
         private ReferenceList References { get; } = new ReferenceList();
         public NamespaceList Namespaces { get; } = new NamespaceList();
-        public JobRunner(JobConfiguration config)
+        public JobRunner(JobConfiguration config, bool debugMode = false)
         {
             conf= config;
+            this.debugMode = debugMode;
         }
         public void Run()
         {
@@ -118,9 +122,19 @@ namespace jobrundj.Console
             IJob oJob = null;
             string codeSourceString = conf.JobFileReference.JobSourceCode;
             l.Trace("source={0}", codeSourceString);
+            string sourceFilePath = conf.JobFileReference.JobFileInfo.FullName;
+
+            // The source text is built from the raw file bytes and the syntax tree carries the
+            // file path: this way the PDB contains the document path and the checksum of the
+            // real .cs file, so the debugger can bind breakpoints set on that file.
+            SourceText sourceText;
+            using (var fs = File.OpenRead(sourceFilePath))
+            {
+                sourceText = SourceText.From(fs, Encoding.UTF8, SourceHashAlgorithm.Sha256, throwIfBinaryDetected: false, canBeEmbedded: true);
+            }
 
             var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp10);
-            var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeSourceString, options);
+            var parsedSyntaxTree = CSharpSyntaxTree.ParseText(sourceText, options, path: sourceFilePath);
 
             StringCollection refAssemblies = conf.JobFileReference.OtherAssemblies;
             foreach (string assem in refAssemblies)
@@ -136,23 +150,38 @@ namespace jobrundj.Console
 
             AddLoadedReferences();
 
-            var csCompilation = CSharpCompilation.Create(conf.JobFileReference.JobID, new[] { parsedSyntaxTree }, References, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithOptimizationLevel(debugMode ? OptimizationLevel.Debug : OptimizationLevel.Release);
+            var csCompilation = CSharpCompilation.Create(conf.JobFileReference.JobID, new[] { parsedSyntaxTree }, References, compilationOptions);
             //Microsoft.CodeAnalysis.Scripting.ScriptOptions.Default.AddReferences(References);
 
             using (var peStream = new MemoryStream())
+            using (var pdbStream = new MemoryStream())
             {
-                var debugOptions = DebugInformationFormat.Embedded; // DebugInformationFormat.Pdb;
-                var result = csCompilation.Emit(peStream, options: new EmitOptions(debugInformationFormat: debugOptions)); //IN MEMORY OPTION//
-                //var result = csCompilation.Emit(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName)); //FILE SYSTEM OPTION//
+                EmitResult result;
+                string debugDllPath = null, debugPdbPath = null;
+                if (debugMode)
+                {
+                    // DEBUG OPTION: portable PDB + embedded source, written to disk next to the dll.
+                    // pdbFilePath must be the real pdb path: the debugger looks for the pdb named in the dll.
+                    (debugDllPath, debugPdbPath) = PrepareDebugPaths();
+                    var embeddedTexts = new[] { EmbeddedText.FromSource(sourceFilePath, sourceText) };
+                    result = csCompilation.Emit(peStream, pdbStream, embeddedTexts: embeddedTexts,
+                        options: new EmitOptions(debugInformationFormat: DebugInformationFormat.PortablePdb, pdbFilePath: debugPdbPath));
+                }
+                else
+                {
+                    // IN MEMORY OPTION: embedded PDB (line numbers in stack traces)
+                    result = csCompilation.Emit(peStream, options: new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded));
+                }
 
                 if (result.Success)
                 {
                     l.Debug("Compiled {0} successfully",conf.JobID);
-                    AssemblyLoadContext assemblyContext = new AssemblyLoadContext(conf.JobFileReference.JobID, true); //IN MEMORY OPTION//
-                    //AssemblyLoadContext assemblyContext = new AssemblyLoadContext(conf.JobFileReference.JobID, true); //FILE SYSTEM OPTION//
 
-                    Assembly assembly = Assembly.Load(peStream.ToArray()); //IN MEMORY OPTION//
-                    //Assembly assembly = assemblyContext.LoadFromAssemblyPath(Path.Combine(conf.JobsTempDLLDirectoryPath.FullName, conf.JobAssembyName)); //FILE SYSTEM OPTION//
+                    Assembly assembly = debugMode
+                        ? LoadAssemblyForDebug(peStream, pdbStream, debugDllPath, debugPdbPath)
+                        : Assembly.Load(peStream.ToArray());
 
                     var type = typeof(IJob);
                     Assembly[] assemblies = new Assembly[1];
@@ -185,6 +214,44 @@ namespace jobrundj.Console
             }
 
             return oJob;
+        }
+
+        /// <summary>
+        /// Returns the dll/pdb paths in temp/debug for this run and removes files of previous runs.
+        /// </summary>
+        private (string dllPath, string pdbPath) PrepareDebugPaths()
+        {
+            var debugDir = new DirectoryInfo(Path.Combine(conf.TempDirectoryPath.FullName, "debug"));
+            if (!debugDir.Exists) debugDir.Create();
+
+            // best-effort cleanup of previous runs (files still locked by running processes are skipped)
+            foreach (var old in debugDir.GetFiles())
+            {
+                try { old.Delete(); } catch { }
+            }
+            foreach (var old in debugDir.GetDirectories())
+            {
+                try { old.Delete(true); } catch { }
+            }
+
+            // a subfolder per process (the loaded dll stays locked until the process exits),
+            // while dll and pdb keep the assembly name
+            var runDir = debugDir.CreateSubdirectory(Environment.ProcessId.ToString());
+            return (Path.Combine(runDir.FullName, conf.JobAssembyName),
+                    Path.Combine(runDir.FullName, conf.JobID + ".pdb"));
+        }
+
+        /// <summary>
+        /// Writes dll + pdb to temp/debug and loads the assembly from disk, so the debugger
+        /// finds the symbols next to the module and can bind breakpoints on the job source file.
+        /// </summary>
+        private Assembly LoadAssemblyForDebug(MemoryStream peStream, MemoryStream pdbStream, string dllPath, string pdbPath)
+        {
+            File.WriteAllBytes(dllPath, peStream.ToArray());
+            File.WriteAllBytes(pdbPath, pdbStream.ToArray());
+            l.Debug("Debug assembly written to {0}", dllPath);
+
+            return Assembly.LoadFrom(dllPath);
         }
 
         private static IJob _LookForIJob(IEnumerable<Type> types)

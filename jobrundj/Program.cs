@@ -2,6 +2,7 @@
 using jobmodeldj.Utils;
 using jobrundj.Console;
 using System.Reflection;
+using System.Diagnostics;
 using NLog;
 using CommandLine;
 
@@ -18,6 +19,7 @@ namespace jobrundj
             string externaldlljobsDirecoryPath = string.Empty;
             string tmpDirecoryPath = string.Empty;
             string jobName = string.Empty;
+            bool debugMode = false;
             
             try
             {
@@ -51,9 +53,27 @@ namespace jobrundj
                         .WithParsed(o =>
                         {
                             jobName = o.JobName;
+                            if (!string.IsNullOrEmpty(o.JobsDirectory))
+                            {
+                                jobDirecoryPath = Path.GetFullPath(o.JobsDirectory);
+                                l.Debug("jobDirecoryPath overridden={0}", jobDirecoryPath);
+                            }
+                            debugMode = o.Debug;
                         })
                         .WithNotParsed(HandleParseError);
-                
+
+                if (debugMode && !Debugger.IsAttached)
+                {
+                    l.Warn("Debug mode: waiting for a debugger to attach to process {0}..", Environment.ProcessId);
+                    while (!Debugger.IsAttached)
+                    {
+                        Thread.Sleep(250);
+                    }
+                    l.Info("Debugger attached");
+                }
+                // compile with debug symbols whenever a debugger is attached (e.g. F5 from VS Code)
+                debugMode = debugMode || Debugger.IsAttached;
+
                 if (!string.IsNullOrEmpty(jobName))
                 {
                     JobConfiguration conf = new JobConfiguration(jobName, args, executerFileName, appDirecoryPath, jobDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
@@ -61,7 +81,7 @@ namespace jobrundj
 
                     l.Info($"Configuring job to run: {conf.JobID}");
 
-                    JobRunner jobrunner = new JobRunner(conf);
+                    JobRunner jobrunner = new JobRunner(conf, debugMode);
                     jobrunner.Run();
                 }
 

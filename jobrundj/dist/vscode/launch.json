@@ -1,0 +1,52 @@
+{
+  // VS Code debug configurations for jobrundj.
+  // Open the jobrundj folder in VS Code, open a job file under "jobs",
+  // set breakpoints and press F5.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug current job file",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/jobrundj.dll",
+      "windows": {
+        "program": "${workspaceFolder}/jobrundj.exe"
+      },
+      "args": ["-j", "${fileBasenameNoExtension}", "-d", "${fileDirname}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": true
+    },
+    {
+      "name": "Debug job by name",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/jobrundj.dll",
+      "windows": {
+        "program": "${workspaceFolder}/jobrundj.exe"
+      },
+      "args": ["-j", "${input:jobName}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": true
+    },
+    {
+      // Start "jobrundj -j JobName --debug" (it waits for the debugger), then attach
+      "name": "Attach to jobrundj",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "justMyCode": true
+    }
+  ],
+  "inputs": [
+    {
+      "id": "jobName",
+      "type": "promptString",
+      "description": "Job name (file name in the jobs folder, without .cs)",
+      "default": "JobTest"
+    }
+  ]
+}

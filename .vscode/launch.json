@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Open a job .cs file in the editor, set breakpoints and press F5:
+      // the job is the open file, taken from the folder where it lives.
+      "name": "Debug current job file",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/jobrundj/bin/Debug/net10.0/jobrundj.dll",
+      "args": ["-j", "${fileBasenameNoExtension}", "-d", "${fileDirname}"],
+      "cwd": "${workspaceFolder}/jobrundj/bin/Debug/net10.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": false
+    },
+    {
+      // Asks for the job name; jobs are taken from the "jobs" folder next to jobrundj.dll
+      "name": "Debug job by name",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/jobrundj/bin/Debug/net10.0/jobrundj.dll",
+      "args": ["-j", "${input:jobName}"],
+      "cwd": "${workspaceFolder}/jobrundj/bin/Debug/net10.0",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "justMyCode": false
+    },
+    {
+      // Start jobrundj with --debug (it waits for the debugger), then attach to it
+      "name": "Attach to jobrundj",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "justMyCode": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "jobName",
+      "type": "promptString",
+      "description": "Job name (file name without .cs)",
+      "default": "JobTest"
+    }
+  ]
+}

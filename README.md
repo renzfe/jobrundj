@@ -78,7 +78,36 @@ On Linux or Mac OS:
 
 **`dotnet jobrundj.dll`** **`-j`** `JobName`  
 
+
+# Debugging jobs in Visual Studio Code
+
+The distribution contains a ready-to-use `.vscode` folder.
+
+1. Install [VS Code](https://code.visualstudio.com/) and the **C#** extension (`ms-dotnettools.csharp`).
+2. Open the jobrundj folder (the one containing `jobrundj.exe` / `jobrundj.dll`) in VS Code.
+3. Open your job file in `jobs`, set breakpoints and press **F5** (configuration *Debug current job file*).
+
+Other configurations:
+
+- *Debug job by name*: asks for the job name.
+- *Attach to jobrundj*: start `jobrundj -j JobName --debug` (it waits for a debugger), then attach to the process.
+
+Command line options:
+
+- `-j`, `--job` job to run (required)
+- `-d`, `--jobsdir` folder containing the jobs (default: `jobs` next to the executable)
+- `--debug` compile the job with debug symbols and wait for a debugger to attach
+
+`jobs/jobs.csproj` is used only by VS Code for IntelliSense (requires the .NET SDK); it is not needed to run the jobs.
+
 # Release notes
+
+## v3.0.0 Release date: 2026-11-15
+
+- Debug jobs in Visual Studio Code (breakpoints in the job .cs files)
+- New command line options: `-d`/`--jobsdir` and `--debug`
+- The distribution includes `.vscode` debug configurations, `jobs/jobs.csproj` for IntelliSense and a guide for job developers
+- `build-dist.ps1` script to create the distribution package
 
 ## v2.3.0 Release date: 2026-11-14
 
