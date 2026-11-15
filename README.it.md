@@ -18,20 +18,20 @@
 - La cartella docs/JobExamples contiene alcuni job di prova
 
 ```c#
-//<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>  
-using System;  
-using NLog;  
-using jobmodeldj.Model;  
-  
-namespace jobmodeldj.jobs  
-{  
+//<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>
+using System;
+using System.Threading;
+using NLog;
+using jobmodeldj.Model;
 
-    class JobTest : Job  
-    {  
-        public override int JobRuntimeVersion { get { return 4; } }  
+namespace jobmodeldj.jobs
+{
+    class JobTest : Job
+    {
+        public override int JobRuntimeVersion { get { return 4; } }
         public int Version { get { return 1; } }
-  
-        public override void Execute(JobConfiguration conf) 
+
+        public override void Execute(JobConfiguration conf)
         {
             try
             {
@@ -48,13 +48,25 @@ namespace jobmodeldj.jobs
                 l.Info("conf.TempDirectoryPath={0}", conf.TempDirectoryPath);
                 l.Info("ConnectionString={0}", conf.Json?["ConnectionString"]);
                 l.Info("Params:LevelOne:LevelTwo={0}", conf.Json?["Params:LevelOne:LevelTwo"]);
+
+                // Demo di Progress: esegui "jobrundj -j JobTest --ui" per vedere la barra di avanzamento.
+                // Progress(corrente, totale, messaggio) muove la barra della dashboard e scrive
+                // "Progress 25/50 (50%) ..." nel log (al massimo una volta per punto percentuale o ogni 2 secondi).
+                int total = 50;
+                for (int i = 1; i <= total; i++)
+                {
+                    Thread.Sleep(100); // simula il lavoro su un elemento
+                    Progress(i, total, i <= total / 2 ? "Reading items" : "Writing items");
+                    if (i % 10 == 0) l.Info("{0} items processed", i);
+                }
+
                 //
                 //TODO scrivi qui il tuo codice..
                 //
             }
             catch (Exception ex)
             {
-                l.Error("error {0} - {1}", JobID, ex.Message);
+                l.Error("errore {0} - {1}", JobID, ex.Message);
                 throw ex;
             }
             finally
@@ -62,10 +74,16 @@ namespace jobmodeldj.jobs
                 l.Info("end {0}", JobID);
             }
         }
-  
+
     }
 }
 ```
+
+Esecuzione di JobTest con la dashboard in tempo reale in Windows Terminal (`jobrundj.exe -j JobTest --ui`), durante l'esecuzione e alla fine:
+
+![jobrundj --ui: JobTest in esecuzione, barra di avanzamento al 20%, contatori e ultimi messaggi di log](docs/Support/WindowsTerminal_WIP.png)
+
+![jobrundj --ui: riepilogo di JobTest completato con successo, con durata, contatori e file di log](docs/Support/WindowsTerminal_CompletedOK.png)
 
 # jobrundj.exe / jobrundj.dll
 
