@@ -80,6 +80,25 @@ On Linux or Mac OS:
 **`dotnet jobrundj.dll`** **`-j`** `JobName`  
 
 
+# Live dashboard
+
+Add `--ui` to follow the run in a colored console dashboard: status, elapsed time, progress bar, number of warnings and errors and the latest log messages. At the end a summary shows the result, the duration, the warnings and errors and the log files.
+
+On Windows OS:
+
+**`jobrundj.exe`** **`-j`** `JobName` **`--ui`**
+
+On Linux or Mac OS:
+
+**`dotnet jobrundj.dll`** **`-j`** `JobName` **`--ui`**
+
+The progress bar appears when the job calls `Progress(current, total, "message")`, for example `Progress(i, rows.Count, "Exporting rows")` inside a loop. `Progress` also writes a log line (`Progress 680/1000 (68%) Exporting rows`), at most once per percentage point or every 2 seconds, so it can be called on every item.
+
+`--ui` needs an interactive terminal (Windows Terminal, the macOS Terminal, any Linux terminal). When the output is redirected or the job is scheduled the option is ignored and jobrundj logs to the console as usual. The log files are always written.
+
+To start a job with a double click, create a desktop shortcut with `new-shortcut.ps1` (Windows) or `new-shortcut.sh` (macOS / Linux), included in the distribution: see the [guide for job developers](jobrundj/dist/DEVELOPER_GUIDE.md#desktop-shortcuts).
+
+
 # Debugging jobs in Visual Studio Code
 
 The distribution contains a ready-to-use `.vscode` folder. Full instructions (debug configurations, job arguments, troubleshooting) are in the [guide for job developers](jobrundj/dist/DEVELOPER_GUIDE.md#debugging-in-vs-code).
@@ -99,6 +118,8 @@ Command line options:
 - `-j`, `--job` job to run (required)
 - `-d`, `--jobsdir` folder containing the jobs (default: `jobs` next to the executable)
 - `--debug` compile the job with debug symbols and wait for a debugger to attach
+- `--ui` show a live dashboard with the progress and a summary at the end (see [Live dashboard](#live-dashboard))
+- `--pause` wait for a key before closing the window (interactive console only), useful for desktop shortcuts
 
 `jobs/jobs.csproj` is used only by VS Code for IntelliSense (requires the .NET SDK); it is not needed to run the jobs.
 
@@ -130,6 +151,13 @@ The `.vscode` folder, `jobs/jobs.csproj`, the guide `DEVELOPER_GUIDE.md` and the
 🛠️ **If you write or debug jobs, follow the [guide for job developers](jobrundj/dist/DEVELOPER_GUIDE.md).** It explains how to set up VS Code, write a job, debug it step by step and contains a complete example (a job that exports a database query to a CSV file). The same guide is included as `DEVELOPER_GUIDE.md` in the distribution package.
 
 # Release notes
+
+## v3.1.0 Release date: 2026-11-15
+
+- `--ui` option: live console dashboard (progress, log counters, latest messages) and a summary at the end
+- `Progress(current, total, message)` method in `Job` to report the job progress
+- `--pause` option: waits for a key before closing the window
+- `new-shortcut.ps1` / `new-shortcut.sh` scripts to create desktop shortcuts that run a job with the dashboard
 
 ## v3.0.0 Release date: 2026-11-15
 

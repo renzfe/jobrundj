@@ -86,6 +86,9 @@ Syntax: `//<jobrundjReferencedAssemblies>System.Data.Common.dll,System.Net.Http.
 
 - `l` – NLog `Logger` (`l.Trace/Debug/Info/Warn/Error/Fatal("text {0}", value)`, `l.Error(ex, "text")`).
 - `JobID` – the class name.
+- `Progress(long current, long total, string? message = null)` – reports progress: writes an Info log line
+  (throttled: at most once per percentage point or every 2 seconds, so it can be called on every item) and moves
+  the progress bar of the `--ui` dashboard. Use it in loops over many items; `total` = `0` when unknown.
 
 **`JobConfiguration conf`**
 
@@ -153,7 +156,7 @@ Parser.Default.ParseArguments<MyJobOptions>(conf.JobArgs)
       .WithNotParsed(errors => throw new ArgumentException("Invalid arguments"));
 ```
 
-Do not use the option letters `j` and `d` or the name `debug`: jobrundj uses them.
+Do not use the option letters `j` and `d` or the names `debug`, `ui` and `pause`: jobrundj uses them.
 
 ## Errors, logging, exit code
 
@@ -176,6 +179,7 @@ catch (Exception ex)
 ## Running and debugging
 
 - Run: `jobrundj.exe -j MyJob` (Windows) or `dotnet jobrundj.dll -j MyJob` (Linux / macOS), from the jobrundj folder.
+- Live dashboard with progress bar and summary: add `--ui` (interactive terminals only; the job code does not change).
 - Debug: in VS Code open the job file and press F5 with the configuration **Debug current job file**
   (or **Debug current job file (with arguments)**). Breakpoints in the job file work.
 - Compile errors are printed in the log as `CSxxxx: message`: fix them using the rules above.

@@ -80,6 +80,25 @@ Sous Linux ou Mac OS :
 **`dotnet jobrundj.dll`** **`-j`** `NomDuJob`  
 
 
+# Tableau de bord en temps réel
+
+Ajoutez `--ui` pour suivre l'exécution dans un tableau de bord coloré dans la console : état, temps écoulé, barre de progression, nombre d'avertissements et d'erreurs et derniers messages du log. À la fin, un résumé affiche le résultat, la durée, les avertissements et erreurs et les fichiers de log.
+
+Sous Windows :
+
+**`jobrundj.exe`** **`-j`** `NomDuJob` **`--ui`**
+
+Sous Linux ou Mac OS :
+
+**`dotnet jobrundj.dll`** **`-j`** `NomDuJob` **`--ui`**
+
+La barre de progression apparaît quand le job appelle `Progress(courant, total, "message")`, par exemple `Progress(i, lignes.Count, "Export des lignes")` dans une boucle. `Progress` écrit aussi une ligne de log (`Progress 680/1000 (68%) Export des lignes`), au plus une fois par point de pourcentage ou toutes les 2 secondes : il peut donc être appelé à chaque élément.
+
+`--ui` nécessite un terminal interactif (Windows Terminal, le Terminal de macOS, n'importe quel terminal Linux). Si la sortie est redirigée ou si le job est planifié, l'option est ignorée et jobrundj écrit le log dans la console comme d'habitude. Les fichiers de log sont toujours écrits.
+
+Pour lancer un job d'un double clic, créez un raccourci sur le bureau avec `new-shortcut.ps1` (Windows) ou `new-shortcut.sh` (macOS / Linux), inclus dans la distribution : voir le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#desktop-shortcuts).
+
+
 # Déboguer des jobs dans Visual Studio Code
 
 Le package de distribution contient un dossier `.vscode` prêt à l'emploi. Les instructions complètes (configurations de débogage, arguments des jobs, résolution des problèmes) se trouvent dans le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#debugging-in-vs-code).
@@ -99,6 +118,8 @@ Options de ligne de commande :
 - `-j`, `--job` job à exécuter (obligatoire)
 - `-d`, `--jobsdir` dossier contenant les jobs (par défaut : `jobs` à côté de l'exécutable)
 - `--debug` compile le job avec les symboles de débogage et attend qu'un débogueur s'attache
+- `--ui` affiche un tableau de bord en temps réel avec la progression et un résumé à la fin (voir [Tableau de bord en temps réel](#tableau-de-bord-en-temps-réel))
+- `--pause` attend une touche avant de fermer la fenêtre (console interactive uniquement), utile pour les raccourcis sur le bureau
 
 `jobs/jobs.csproj` sert uniquement à VS Code pour IntelliSense (nécessite le .NET SDK) ; il n'est pas nécessaire pour exécuter les jobs.
 
@@ -130,6 +151,13 @@ Le dossier `.vscode`, le fichier `jobs/jobs.csproj`, le guide `DEVELOPER_GUIDE.m
 🛠️ **Si vous écrivez ou déboguez des jobs, suivez le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md)** (en anglais). Il explique comment configurer VS Code, écrire un job, le déboguer pas à pas et contient un exemple complet (un job qui exporte le résultat d'une requête sur une base de données dans un fichier CSV). Le même guide est inclus sous le nom `DEVELOPER_GUIDE.md` dans le package de distribution.
 
 # Notes de version
+
+## v3.1.0 Date de publication : 2026-11-15
+
+- Option `--ui` : tableau de bord en temps réel dans la console (progression, compteurs du log, derniers messages) et résumé à la fin
+- Méthode `Progress(courant, total, message)` dans `Job` pour indiquer la progression du job
+- Option `--pause` : attend une touche avant de fermer la fenêtre
+- Scripts `new-shortcut.ps1` / `new-shortcut.sh` pour créer des raccourcis sur le bureau qui lancent un job avec le tableau de bord
 
 ## v3.0.0 Date de publication : 2026-11-15
 

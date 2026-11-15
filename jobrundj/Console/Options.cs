@@ -12,5 +12,11 @@ namespace jobrundj.Console
 
         [Option("debug", Required = false, Default = false, HelpText = "Compile the job with debug symbols and wait for a debugger to attach.")]
         public bool Debug { get; set; }
+
+        [Option("ui", Required = false, Default = false, HelpText = "Show a live dashboard (progress, log counters, latest messages) and a summary at the end.")]
+        public bool Ui { get; set; }
+
+        [Option("pause", Required = false, Default = false, HelpText = "Wait for a key before closing (interactive console only), e.g. for desktop shortcuts.")]
+        public bool Pause { get; set; }
     }
 }

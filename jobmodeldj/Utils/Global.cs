@@ -12,6 +12,10 @@
         public const string JSON_EXTENSION = "json";
         public const string TAG_FOR_EXTERNAL_ASSEMBLY = "jobrundjReferencedAssemblies";
         public const int JOBS_RUNTIME_VERSION = 4;
+        /// <summary>NLog event properties written by Job.Progress (read by the jobrundj --ui dashboard)</summary>
+        public const string PROGRESS_CURRENT_PROPERTY = "jobrundjProgressCurrent";
+        public const string PROGRESS_TOTAL_PROPERTY = "jobrundjProgressTotal";
+        public const string PROGRESS_MESSAGE_PROPERTY = "jobrundjProgressMessage";
         public static readonly string[] DefaultNamespaces =
         {
             "System", "System.Text", "System.Reflection", "System.IO", "System.Net", "System.Net.Http",

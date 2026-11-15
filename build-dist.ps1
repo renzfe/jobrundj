@@ -56,6 +56,9 @@ Copy-Item (Join-Path $root "jobrundj\dist\DEVELOPER_GUIDE.md") (Join-Path $outDi
 # context files for AI assistants (AGENTS.md: shared standard, CLAUDE.md: imports it for Claude Code)
 Copy-Item (Join-Path $root "jobrundj\dist\AGENTS.md") (Join-Path $outDir "AGENTS.md") -Force
 Copy-Item (Join-Path $root "jobrundj\dist\CLAUDE.md") (Join-Path $outDir "CLAUDE.md") -Force
+# scripts to create desktop shortcuts that run a job (Windows / macOS + Linux)
+Copy-Item (Join-Path $root "jobrundj\dist\new-shortcut.ps1") (Join-Path $outDir "new-shortcut.ps1") -Force
+Copy-Item (Join-Path $root "jobrundj\dist\new-shortcut.sh") (Join-Path $outDir "new-shortcut.sh") -Force
 New-Item -ItemType Directory -Force (Join-Path $outDir "externaldll") | Out-Null
 
 Compress-Archive -Path $outDir -DestinationPath $zipFile

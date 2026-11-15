@@ -80,6 +80,25 @@ Unter Linux oder Mac OS:
 **`dotnet jobrundj.dll`** **`-j`** `JobName`  
 
 
+# Live-Dashboard
+
+Füge `--ui` hinzu, um die Ausführung in einem farbigen Konsolen-Dashboard zu verfolgen: Status, verstrichene Zeit, Fortschrittsbalken, Anzahl der Warnungen und Fehler und die letzten Log-Meldungen. Am Ende zeigt eine Zusammenfassung Ergebnis, Dauer, Warnungen und Fehler sowie die Log-Dateien.
+
+Unter Windows:
+
+**`jobrundj.exe`** **`-j`** `JobName` **`--ui`**
+
+Unter Linux oder Mac OS:
+
+**`dotnet jobrundj.dll`** **`-j`** `JobName` **`--ui`**
+
+Der Fortschrittsbalken erscheint, wenn der Job `Progress(aktuell, gesamt, "Meldung")` aufruft, zum Beispiel `Progress(i, zeilen.Count, "Zeilen exportieren")` in einer Schleife. `Progress` schreibt außerdem eine Log-Zeile (`Progress 680/1000 (68%) Zeilen exportieren`), höchstens einmal pro Prozentpunkt oder alle 2 Sekunden, und kann daher bei jedem Element aufgerufen werden.
+
+`--ui` benötigt ein interaktives Terminal (Windows Terminal, das macOS-Terminal, jedes Linux-Terminal). Ist die Ausgabe umgeleitet oder wird der Job geplant ausgeführt, wird die Option ignoriert und jobrundj schreibt das Log wie gewohnt auf die Konsole. Die Log-Dateien werden immer geschrieben.
+
+Um einen Job per Doppelklick zu starten, erstelle eine Desktop-Verknüpfung mit `new-shortcut.ps1` (Windows) oder `new-shortcut.sh` (macOS / Linux), die in der Distribution enthalten sind: siehe den [Leitfaden für Job-Entwickler](jobrundj/dist/DEVELOPER_GUIDE.md#desktop-shortcuts).
+
+
 # Jobs in Visual Studio Code debuggen
 
 Das Distributionspaket enthält einen einsatzbereiten Ordner `.vscode`. Die vollständige Anleitung (Debug-Konfigurationen, Job-Argumente, Fehlerbehebung) steht im [Leitfaden für Job-Entwickler](jobrundj/dist/DEVELOPER_GUIDE.md#debugging-in-vs-code).
@@ -99,6 +118,8 @@ Befehlszeilenoptionen:
 - `-j`, `--job` auszuführender Job (erforderlich)
 - `-d`, `--jobsdir` Ordner mit den Jobs (Standard: `jobs` neben der ausführbaren Datei)
 - `--debug` kompiliert den Job mit Debug-Symbolen und wartet, bis sich ein Debugger anhängt
+- `--ui` zeigt ein Live-Dashboard mit Fortschritt und am Ende eine Zusammenfassung (siehe [Live-Dashboard](#live-dashboard))
+- `--pause` wartet vor dem Schließen des Fensters auf einen Tastendruck (nur interaktive Konsole), nützlich für Desktop-Verknüpfungen
 
 `jobs/jobs.csproj` wird nur von VS Code für IntelliSense verwendet (erfordert das .NET SDK); zum Ausführen der Jobs wird es nicht benötigt.
 
@@ -130,6 +151,13 @@ Der Ordner `.vscode`, die Datei `jobs/jobs.csproj`, der Leitfaden `DEVELOPER_GUI
 🛠️ **Wenn du Jobs schreibst oder debuggst, folge dem [Leitfaden für Job-Entwickler](jobrundj/dist/DEVELOPER_GUIDE.md)** (auf Englisch). Er erklärt, wie man VS Code einrichtet, einen Job schreibt und Schritt für Schritt debuggt, und enthält ein vollständiges Beispiel (ein Job, der das Ergebnis einer Datenbankabfrage in eine CSV-Datei exportiert). Derselbe Leitfaden ist als `DEVELOPER_GUIDE.md` im Distributionspaket enthalten.
 
 # Versionshinweise
+
+## v3.1.0 Veröffentlichungsdatum: 2026-11-15
+
+- Option `--ui`: Live-Dashboard in der Konsole (Fortschritt, Log-Zähler, letzte Meldungen) und Zusammenfassung am Ende
+- Methode `Progress(aktuell, gesamt, Meldung)` in `Job`, um den Fortschritt des Jobs zu melden
+- Option `--pause`: wartet vor dem Schließen des Fensters auf einen Tastendruck
+- Skripte `new-shortcut.ps1` / `new-shortcut.sh` zum Erstellen von Desktop-Verknüpfungen, die einen Job mit dem Dashboard starten
 
 ## v3.0.0 Veröffentlichungsdatum: 2026-11-15
 

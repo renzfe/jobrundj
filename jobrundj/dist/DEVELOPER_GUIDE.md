@@ -26,6 +26,8 @@ jobrundj/
 ├── AGENTS.md           context for AI assistants (see "Using an AI assistant")
 ├── CLAUDE.md           same, for Claude Code
 ├── NLog.config         logging configuration
+├── new-shortcut.ps1    creates a desktop shortcut for a job (Windows)
+├── new-shortcut.sh     same, for macOS and Linux
 └── jobrundj.exe        the job runner (jobrundj.dll on Linux / macOS)
 ```
 
@@ -63,6 +65,23 @@ namespace jobmodeldj.jobs
   comma separated: `//<jobrundjReferencedAssemblies>MyLib.dll,Other.dll</jobrundjReferencedAssemblies>`.
 - The job is compiled with C# 10, without implicit usings: write every `using` you need.
 
+### Reporting progress
+
+For long jobs call `Progress(current, total, "message")` (inherited from `Job`). When the job is started
+with `--ui` it moves the progress bar of the live dashboard and updates the estimated remaining time;
+otherwise it only writes a log line such as `Progress 680/1000 (68%) Exporting rows`.
+
+```c#
+for (int i = 0; i < rows.Count; i++)
+{
+    // ... process the row
+    Progress(i + 1, rows.Count, "Exporting rows");
+}
+```
+
+It can be called on every item: the log line is written at most once per percentage point or every
+2 seconds. Use `total` = `0` when the total is not known (the dashboard shows only the counter).
+
 ## Debugging in VS Code
 
 1. Open the **jobrundj** folder (the one containing `jobrundj.exe`) in VS Code: *File → Open Folder…*
@@ -99,9 +118,74 @@ dotnet jobrundj.dll -j MyJob          (Linux / macOS)
 | `-j`, `--job` | job to run (required) |
 | `-d`, `--jobsdir` | folder containing the jobs (default: `jobs`) |
 | `--debug` | compile with debug symbols and wait for a debugger to attach |
+| `--ui` | live dashboard (status, elapsed time, progress bar, warnings/errors, latest log messages) and a summary at the end; ignored when the output is redirected or the job is scheduled |
+| `--pause` | at the end wait for a key before closing the window (used by desktop shortcuts); ignored when the output is redirected or the job is scheduled |
 
 Any other argument is passed to the job in `conf.JobArgs`.
 Exit code: `0` = success, `1` = error (details in the `logs` folder).
+
+## Desktop shortcuts
+
+To let a user start a job with a double click, create a shortcut with the script included in the
+jobrundj folder. The shortcut runs `jobrundj -j <Job> --ui --pause`: the job runs with the live dashboard and
+at the end the window stays open on the summary until a key is pressed.
+
+Run the script **on the computer where the shortcut is needed**: the shortcut contains the absolute paths
+of that installation. If jobrundj is moved to another folder, create the shortcut again.
+
+### Windows – `new-shortcut.ps1`
+
+From a PowerShell window in the jobrundj folder:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\new-shortcut.ps1 -Job JobExportCsv -Name "Export customers"
+```
+
+| Parameter | Description |
+|---|---|
+| `-Job` | job name, without `.cs` (required) |
+| `-Name` | name shown under the icon (default: the job name) |
+| `-Icon` | `.ico` file for the icon (default: the icon of `jobrundj.exe`) |
+| `-JobArgs` | arguments for the job, in quotes: `-JobArgs "-p C:\temp -a 30"` |
+| `-Location` | `Desktop` (default), `StartMenu` (*Start → jobrundj*), `Both`, or a folder path |
+| `-NoUi` | classic colored log instead of the dashboard |
+
+`-ExecutionPolicy Bypass` is needed only if Windows blocks scripts (*"running scripts is disabled on this
+system"*); it applies only to this command. The shortcut can then be pinned to the taskbar or to Start
+(right click → *Pin to taskbar*).
+
+To create it by hand instead: right click on the desktop → *New → Shortcut*, location
+`"C:\jobrundj\jobrundj.exe" -j JobExportCsv --ui --pause`, then *Properties → Change Icon…*.
+
+### macOS and Linux – `new-shortcut.sh`
+
+From a terminal in the jobrundj folder:
+
+```bash
+bash new-shortcut.sh -j JobExportCsv -n "Export customers"
+```
+
+| Option | Description |
+|---|---|
+| `-j`, `--job` | job name, without `.cs` (required) |
+| `-n`, `--name` | name shown under the icon (default: the job name) |
+| `-i`, `--icon` | icon image: `.png` on Linux; `.png` or `.icns` on macOS |
+| `-a`, `--args` | arguments for the job, in quotes: `-a "-p /data -a 30"` |
+| `-o`, `--output` | destination folder (see below) |
+| `--no-ui` | classic colored log instead of the dashboard |
+
+- **macOS**: creates `<Name>.command` on the Desktop. A double click opens Terminal and runs the job.
+  If the icon can't be set automatically, select the file, *File → Get Info*, and paste the image onto the
+  small icon at the top left.
+- **Linux**: creates `jobrundj-<Job>.desktop` in the applications menu (`~/.local/share/applications`) and on
+  the desktop. On GNOME, if the desktop icon shows a warning, right click → *Allow Launching*.
+
+The script writes the absolute path of `dotnet` into the shortcut, because shortcuts started from the desktop
+don't load the terminal `PATH`. If .NET is installed later or moved, create the shortcut again.
+If `dotnet` is not found, install the .NET 10 Runtime or set `DOTNET_ROOT`.
+
+Launch `new-shortcut.sh` with `bash` as shown: when the package is extracted from a zip file the script may
+not be executable.
 
 ## Using an AI assistant
 
@@ -214,8 +298,11 @@ namespace jobmodeldj.jobs
             l.Info("File saved: {0}", filePath);
         }
 
-        private static void WriteCsv(DataTable table, string filePath, string separator)
+        private void WriteCsv(DataTable table, string filePath, string separator)
         {
+            int total = table.Rows.Count;
+            int written = 0;
+
             // UTF-8 with BOM: Excel opens accented characters correctly
             using (var writer = new StreamWriter(filePath, false, new UTF8Encoding(true)))
             {
@@ -236,6 +323,10 @@ namespace jobmodeldj.jobs
                         values[c] = CsvValue(row[c], separator);
                     }
                     writer.WriteLine(string.Join(separator, values));
+
+                    // progress bar of the --ui dashboard + "Progress 680/1000 (68%)" in the log
+                    written++;
+                    Progress(written, total, "Writing rows");
                 }
             }
         }
@@ -276,6 +367,11 @@ What the code does:
   even if the query fails.
 - **Step 3** – writes a header row with the column names and one line per row. The file name contains
   date and time (`JobExportCsv_20261115_103000.csv`), so every run creates a new file.
+- **`Progress(written, total, "Writing rows")`** – reports how many rows have been written. With `--ui`
+  the dashboard shows a progress bar and the estimated remaining time (see Step 5); without `--ui` it only
+  writes a log line such as `Progress 680/1000 (68%) Writing rows`. It is called on every row, but the log
+  line is written at most once per percentage point or every 2 seconds, so the log stays readable.
+  `WriteCsv` is not `static` because `Progress` belongs to the job.
 - **`CsvValue`** – turns each value into text: empty for `NULL`, dates as `yyyy-MM-dd HH:mm:ss`,
   numbers with the dot as decimal separator (`1234.5`), and puts between quotes the values that contain
   the separator, quotes or new lines (`"Caffè; ""special"""`).
@@ -307,6 +403,22 @@ id;name;price;created_at
 
 The exit code is `0` if the export worked and `1` if it failed. To run the job automatically,
 schedule this command with Windows Task Scheduler or cron.
+
+To follow the export in the live dashboard, add `--ui`:
+
+```
+jobrundj.exe -j JobExportCsv --ui
+```
+
+While the rows are written you see the progress bar, the number of rows (`680 / 1,000`), the message
+*Writing rows* and the estimated remaining time; at the end a summary shows the result, the duration, the
+warnings and errors and the log files. Running the query (step 2) is a single call, so during that phase
+the dashboard shows only *Running* and the elapsed time: the bar appears when the rows are written.
+To let a user start the export with a double click, create a shortcut (see [Desktop shortcuts](#desktop-shortcuts)):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\new-shortcut.ps1 -Job JobExportCsv -Name "Export customers"
+```
 
 ### Going further
 

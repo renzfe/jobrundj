@@ -80,6 +80,25 @@ En Linux o Mac OS:
 **`dotnet jobrundj.dll`** **`-j`** `NombreJob`  
 
 
+# Panel en tiempo real
+
+Añade `--ui` para seguir la ejecución en un panel de consola en color: estado, tiempo transcurrido, barra de progreso, número de advertencias y errores y los últimos mensajes del log. Al final, un resumen muestra el resultado, la duración, las advertencias y errores y los archivos de log.
+
+En Windows:
+
+**`jobrundj.exe`** **`-j`** `NombreJob` **`--ui`**
+
+En Linux o Mac OS:
+
+**`dotnet jobrundj.dll`** **`-j`** `NombreJob` **`--ui`**
+
+La barra de progreso aparece cuando el job llama a `Progress(actual, total, "mensaje")`, por ejemplo `Progress(i, filas.Count, "Exportando filas")` dentro de un bucle. `Progress` también escribe una línea de log (`Progress 680/1000 (68%) Exportando filas`), como máximo una vez por punto porcentual o cada 2 segundos, así que se puede llamar en cada elemento.
+
+`--ui` necesita un terminal interactivo (Windows Terminal, el Terminal de macOS, cualquier terminal de Linux). Si la salida está redirigida o el job está programado, la opción se ignora y jobrundj escribe el log en la consola como siempre. Los archivos de log se escriben siempre.
+
+Para iniciar un job con un doble clic, crea un acceso directo en el escritorio con `new-shortcut.ps1` (Windows) o `new-shortcut.sh` (macOS / Linux), incluidos en la distribución: consulta la [guía para desarrolladores de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#desktop-shortcuts).
+
+
 # Depurar jobs en Visual Studio Code
 
 El paquete de distribución contiene una carpeta `.vscode` lista para usar. Las instrucciones completas (configuraciones de depuración, argumentos de los jobs, solución de problemas) están en la [guía para desarrolladores de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#debugging-in-vs-code).
@@ -99,6 +118,8 @@ Opciones de línea de comandos:
 - `-j`, `--job` job que se ejecuta (obligatoria)
 - `-d`, `--jobsdir` carpeta que contiene los jobs (por defecto: `jobs` junto al ejecutable)
 - `--debug` compila el job con símbolos de depuración y espera a que se conecte un depurador
+- `--ui` muestra un panel en tiempo real con el progreso y un resumen al final (ver [Panel en tiempo real](#panel-en-tiempo-real))
+- `--pause` espera una tecla antes de cerrar la ventana (solo consola interactiva), útil para accesos directos en el escritorio
 
 `jobs/jobs.csproj` solo lo usa VS Code para IntelliSense (requiere el .NET SDK); no es necesario para ejecutar los jobs.
 
@@ -130,6 +151,13 @@ La carpeta `.vscode`, el archivo `jobs/jobs.csproj`, la guía `DEVELOPER_GUIDE.m
 🛠️ **Si escribes o depuras jobs, sigue la [guía para desarrolladores de jobs](jobrundj/dist/DEVELOPER_GUIDE.md)** (en inglés). Explica cómo configurar VS Code, escribir un job, depurarlo paso a paso e incluye un ejemplo completo (un job que exporta el resultado de una consulta a base de datos en un archivo CSV). La misma guía se incluye como `DEVELOPER_GUIDE.md` en el paquete de distribución.
 
 # Notas de la versión
+
+## v3.1.0 Fecha de publicación: 2026-11-15
+
+- Opción `--ui`: panel de consola en tiempo real (progreso, contadores del log, últimos mensajes) y resumen al final
+- Método `Progress(actual, total, mensaje)` en `Job` para informar del progreso del job
+- Opción `--pause`: espera una tecla antes de cerrar la ventana
+- Scripts `new-shortcut.ps1` / `new-shortcut.sh` para crear accesos directos en el escritorio que inician un job con el panel
 
 ## v3.0.0 Fecha de publicación: 2026-11-15
 

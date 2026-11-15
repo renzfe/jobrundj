@@ -1,5 +1,6 @@
 ﻿//<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>
 using System;
+using System.Threading;
 using NLog;
 using jobmodeldj.Model;
 
@@ -27,6 +28,18 @@ namespace jobmodeldj.jobs
                 l.Info("conf.TempDirectoryPath={0}", conf.TempDirectoryPath);
                 l.Info("ConnectionString={0}", conf.Json?["ConnectionString"]);
                 l.Info("Params:LevelOne:LevelTwo={0}", conf.Json?["Params:LevelOne:LevelTwo"]);
+
+                // Progress demo: run "jobrundj -j JobTest --ui" to see the progress bar.
+                // Progress(current, total, message) moves the bar of the dashboard and writes
+                // "Progress 25/50 (50%) ..." in the log (at most once per percentage point or every 2 seconds).
+                int total = 50;
+                for (int i = 1; i <= total; i++)
+                {
+                    Thread.Sleep(100); // simulates the work on one item
+                    Progress(i, total, i <= total / 2 ? "Reading items" : "Writing items");
+                    if (i % 10 == 0) l.Info("{0} items processed", i);
+                }
+
                 //
                 //TODO write your code here..
                 //
