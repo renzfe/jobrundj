@@ -5,17 +5,17 @@
 
 is a tool to run C# scripts.  
 
-It is written and runs on .NET 10.0 Framework on Windows, Linux and Mac OS.
+It is written in and runs on .NET 10, on Windows, Linux and macOS.
 
 
-- Scripts are called jobs. Every job is a .cs file saved in .\jobs folder.  
-- The job must contain a class that extends jobmodeldj.jobs.Job.  
-- The script code must be implemented overriding the Execute method.  
-- Any other assembly dependency must be declare in the first line between jobrundjReferencedAssemblies tags
-- Variable l is a NLog.Logger
-- The argument conf contains configuration references
-- It can be add a [JobName].json file to save custom configurations (connection strings, etc)
-- The docs/JobExamples folder contains some job for test
+- Scripts are called jobs. Each job is a .cs file saved in the .\jobs folder.
+- A job must contain a class that extends jobmodeldj.jobs.Job.
+- The script code must be implemented by overriding the Execute method.
+- Any other assembly dependencies must be declared on the first line, between jobrundjReferencedAssemblies tags.
+- The variable l is an NLog.Logger.
+- The conf argument contains configuration references.
+- You can add a [JobName].json file to store custom settings (connection strings, etc.).
+- The docs/JobExamples folder contains some sample jobs for testing.
 
 ```c#
 //<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>
