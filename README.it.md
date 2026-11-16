@@ -5,17 +5,17 @@
 
 è uno strumento per eseguire script C#.
 
-È scritto e gira su .NET 10.0 su Windows, Linux e Mac OS.
+È scritto e gira su .NET 10 su Windows, Linux e macOS.
 
 
 - Gli script si chiamano job. Ogni job è un file .cs salvato nella cartella .\jobs.
 - Il job deve contenere una classe che estende jobmodeldj.jobs.Job.
 - Il codice dello script va implementato facendo l'override del metodo Execute.
-- Eventuali altri assembly da cui dipende il job vanno dichiarati nella prima riga, tra i tag jobrundjReferencedAssemblies
-- La variabile l è un NLog.Logger
-- L'argomento conf contiene i riferimenti di configurazione
-- Si può aggiungere un file [NomeJob].json per salvare configurazioni personalizzate (stringhe di connessione, ecc.)
-- La cartella docs/JobExamples contiene alcuni job di prova
+- Eventuali altri assembly da cui dipende il job vanno dichiarati nella prima riga, tra i tag jobrundjReferencedAssemblies.
+- La variabile l è un NLog.Logger.
+- L'argomento conf contiene i riferimenti di configurazione.
+- Si può aggiungere un file [NomeJob].json per salvare configurazioni personalizzate (stringhe di connessione, ecc.).
+- La cartella docs/JobExamples contiene alcuni job di prova.
 
 ```c#
 //<jobrundjReferencedAssemblies></jobrundjReferencedAssemblies>
