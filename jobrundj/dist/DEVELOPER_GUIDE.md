@@ -82,6 +82,49 @@ for (int i = 0; i < rows.Count; i++)
 It can be called on every item: the log line is written at most once per percentage point or every
 2 seconds. Use `total` = `0` when the total is not known (the dashboard shows only the counter).
 
+### Asking for input
+
+A job can ask for values (text, numbers, dates, confirmations, one or more items from a list) with
+`Prompt` (inherited from `Job`, same as `conf.Prompt`). Every request has a **key**; the value is taken,
+in this order, from:
+
+1. the command line: `--param key=value [key2=value2 ...]`
+2. the `"JobParams"` section of `jobs/<JobName>.json`
+3. the user, with a question in the console, when jobrundj is started with **`-i`** (`--interactive`)
+4. the default value of the request
+
+When no value is found the job fails with a clear message (`Input 'from': no value for ...`).
+This way the same job runs both by hand (`-i`) and from a scheduler (`--param` or the json file).
+
+```c#
+string env = Prompt.Choose("env", "Environment", new[] { "DEV", "TEST", "PROD" }, "DEV");
+IList<string> tables = Prompt.ChooseMany("tables", "Tables to export", new[] { "Customers", "Orders", "Invoices" });
+DateTime from = Prompt.Ask("from", "Export from date", DateTime.Today.AddDays(-30));
+int maxRows = Prompt.Ask<int>("maxRows", "Maximum rows");          // required: no default value
+string user = Prompt.Ask("user", "User name", "admin");
+string password = Prompt.AskSecret("password", "Password");          // not echoed, never logged
+if (env == "PROD" && !Prompt.Confirm("confirm", "Run on PROD?", false)) return;
+```
+
+```
+jobrundj.exe -j JobInput -i
+jobrundj.exe -j JobInput --param env=TEST tables=Orders,Invoices from=2026-01-01 maxRows=500
+```
+
+```json
+{
+  "JobParams": { "env": "TEST", "tables": ["Orders", "Invoices"], "maxRows": 500 }
+}
+```
+
+- With `-i` only the missing values are asked; the log goes on as usual between the questions.
+  `-i` disables `--ui` and is ignored when the input or the output is redirected.
+- Every received value is written in the log (`Input env = TEST (command line)`); secrets are masked.
+- Values from the command line and the json file use the invariant format: `3.5`, `2026-01-31`,
+  `true`/`false` (also `yes`/`no`, `y`/`n`, `1`/`0`). `ChooseMany` takes a comma separated list or a json array.
+- `Prompt.IsInteractive` tells whether the user can be asked.
+- `docs/JobExamples/JobInput.cs` (`jobs/JobInput.cs` in the distribution) is a complete example.
+
 ## Debugging in VS Code
 
 1. Open the **jobrundj** folder (the one containing `jobrundj.exe`) in VS Code: *File → Open Folder…*
@@ -119,6 +162,8 @@ dotnet jobrundj.dll -j MyJob          (Linux / macOS)
 | `-d`, `--jobsdir` | folder containing the jobs (default: `jobs`) |
 | `--debug` | compile with debug symbols and wait for a debugger to attach |
 | `--ui` | live dashboard (status, elapsed time, progress bar, warnings/errors, latest log messages) and a summary at the end; ignored when the output is redirected or the job is scheduled |
+| `-i`, `--interactive` | ask in the console the job input that is not passed with `--param` or in the json file (see [Asking for input](#asking-for-input)); disables `--ui`; ignored when the input or the output is redirected |
+| `--param key=value ...` | job input values read with `Prompt`; also repeatable: `--param a=1 --param b=2` |
 | `--pause` | at the end wait for a key before closing the window (used by desktop shortcuts); ignored when the output is redirected or the job is scheduled |
 
 Any other argument is passed to the job in `conf.JobArgs`.
@@ -149,6 +194,7 @@ powershell -ExecutionPolicy Bypass -File .\new-shortcut.ps1 -Job JobExportCsv -N
 | `-JobArgs` | arguments for the job, in quotes: `-JobArgs "-p C:\temp -a 30"` |
 | `-Location` | `Desktop` (default), `StartMenu` (*Start → jobrundj*), `Both`, or a folder path |
 | `-NoUi` | classic colored log instead of the dashboard |
+| `-Interactive` | for jobs that ask for input: runs with `-i` (questions in the console, classic colored log) |
 
 `-ExecutionPolicy Bypass` is needed only if Windows blocks scripts (*"running scripts is disabled on this
 system"*); it applies only to this command. The shortcut can then be pinned to the taskbar or to Start
@@ -173,6 +219,7 @@ bash new-shortcut.sh -j JobExportCsv -n "Export customers"
 | `-a`, `--args` | arguments for the job, in quotes: `-a "-p /data -a 30"` |
 | `-o`, `--output` | destination folder (see below) |
 | `--no-ui` | classic colored log instead of the dashboard |
+| `--interactive` | for jobs that ask for input: runs with `-i` (questions in the terminal, classic colored log) |
 
 - **macOS**: creates `<Name>.command` on the Desktop. A double click opens Terminal and runs the job.
   If the icon can't be set automatically, select the file, *File → Get Info*, and paste the image onto the

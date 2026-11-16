@@ -23,6 +23,7 @@ namespace jobrundj
             string? jobsDirectoryOverride = null;
             bool debugMode = false;
             bool uiMode = false;
+            bool interactiveMode = false;
             JobDashboard? dashboard = null;
             // read directly from args (not from the parser) so that the window stays open
             // also when the command line is wrong, e.g. a shortcut with a mistyped option
@@ -35,6 +36,8 @@ namespace jobrundj
                 var parser = new Parser(settings =>
                 {
                     settings.IgnoreUnknownArguments = true;
+                    // --param can be repeated: --param a=1 --param b=2
+                    settings.AllowMultiInstance = true;
                 });
                 parser.ParseArguments<Options>(args)
                         .WithParsed(o =>
@@ -43,6 +46,7 @@ namespace jobrundj
                             jobsDirectoryOverride = o.JobsDirectory;
                             debugMode = o.Debug;
                             uiMode = o.Ui;
+                            interactiveMode = o.Interactive;
                         })
                         .WithNotParsed(HandleParseError);
 
@@ -59,6 +63,20 @@ namespace jobrundj
                 debugMode = debugMode || Debugger.IsAttached;
 
                 string appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? string.Empty;
+                if (interactiveMode && !string.IsNullOrEmpty(jobName))
+                {
+                    if (!ConsoleJobPrompt.IsSupported())
+                    {
+                        interactiveMode = false;
+                        l.Warn("-i ignored: the console is not interactive or the input/output is redirected");
+                    }
+                    else if (uiMode)
+                    {
+                        // the live dashboard and the prompts cannot share the console
+                        uiMode = false;
+                        l.Warn("--ui ignored: not available with -i (--interactive)");
+                    }
+                }
                 if (uiMode && !string.IsNullOrEmpty(jobName))
                 {
                     if (JobDashboard.IsSupported())
@@ -101,6 +119,7 @@ namespace jobrundj
                 {
                     JobConfiguration conf = new JobConfiguration(jobName, args, executerFileName, appDirecoryPath, jobDirecoryPath, tmpDirecoryPath, externaldlljobsDirecoryPath, basePath);
                     conf.logConfig = LogManager.Configuration;
+                    conf.Prompt = interactiveMode ? new ConsoleJobPrompt(conf) : new JobPrompt(conf);
 
                     l.Info($"Configuring job to run: {conf.JobID}");
 

@@ -52,6 +52,7 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 # sample jobs + guide
 Copy-Item (Join-Path $root "docs\JobExamples\JobTest.*") (Join-Path $outDir "jobs") -Force
+Copy-Item (Join-Path $root "docs\JobExamples\JobInput.cs") (Join-Path $outDir "jobs") -Force
 Copy-Item (Join-Path $root "jobrundj\dist\DEVELOPER_GUIDE.md") (Join-Path $outDir "DEVELOPER_GUIDE.md") -Force
 # context files for AI assistants (AGENTS.md: shared standard, CLAUDE.md: imports it for Claude Code)
 Copy-Item (Join-Path $root "jobrundj\dist\AGENTS.md") (Join-Path $outDir "AGENTS.md") -Force

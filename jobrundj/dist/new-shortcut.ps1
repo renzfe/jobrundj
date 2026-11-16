@@ -25,8 +25,16 @@
 .PARAMETER NoUi
   Classic colored log instead of the dashboard (the window still waits for a key).
 
+.PARAMETER Interactive
+  For jobs that ask for input: runs with -i, so the missing values are asked in the console
+  (it replaces the dashboard with the classic colored log).
+
 .EXAMPLE
   .\new-shortcut.ps1 -Job JobExportCsv -Name "Export customers" -Icon C:\icons\export.ico
+
+.EXAMPLE
+  .
+ew-shortcut.ps1 -Job JobInput -Name "Export (asks the options)" -Interactive
 
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File new-shortcut.ps1 -Job JobDelete -JobArgs "-p C:\temp -a 30" -Location Both
@@ -37,7 +45,8 @@ param(
     [string]$Icon,
     [string]$JobArgs = "",
     [string]$Location = "Desktop",
-    [switch]$NoUi
+    [switch]$NoUi,
+    [switch]$Interactive
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,7 +82,8 @@ $folders = switch ($Location) {
 }
 
 $arguments = "-j $Job"
-if (-not $NoUi) { $arguments += " --ui" }
+if ($Interactive) { $arguments += " -i" }
+elseif (-not $NoUi) { $arguments += " --ui" }
 $arguments += " --pause"
 if ($JobArgs) { $arguments += " $JobArgs" }
 

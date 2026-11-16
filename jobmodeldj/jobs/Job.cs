@@ -21,6 +21,13 @@ namespace jobmodeldj.jobs
         protected Logger l = LogManager.GetCurrentClassLogger();
         public abstract void Execute(JobConfiguration conf);
 
+        /// <summary>
+        /// Asks the job input (text, numbers, dates, confirmations, choices). The value comes from
+        /// --param key=value, from the "JobParams" section of [JobName].json or, when jobrundj runs
+        /// with -i / --interactive, from a prompt in the console. Same as conf.Prompt.
+        /// </summary>
+        protected IJobPrompt Prompt { get; private set; } = null!;
+
         // Progress throttling: at most one log line per percentage point or every PROGRESS_MIN_INTERVAL
         private static readonly TimeSpan PROGRESS_MIN_INTERVAL = TimeSpan.FromSeconds(2);
         private readonly Stopwatch _progressClock = new Stopwatch();
@@ -29,6 +36,7 @@ namespace jobmodeldj.jobs
         public void MainExecute(JobConfiguration conf)
         {
             l = LogManager.GetLogger(GetType().FullName);
+            Prompt = conf.Prompt;
             l.Info("############# START JOB:{0} v{1} ##########", conf.JobID, this.Version);
 
             try

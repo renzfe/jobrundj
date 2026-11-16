@@ -89,6 +89,19 @@ Syntax: `//<jobrundjReferencedAssemblies>System.Data.Common.dll,System.Net.Http.
 - `Progress(long current, long total, string? message = null)` – reports progress: writes an Info log line
   (throttled: at most once per percentage point or every 2 seconds, so it can be called on every item) and moves
   the progress bar of the `--ui` dashboard. Use it in loops over many items; `total` = `0` when unknown.
+- `Prompt` (`IJobPrompt`, same as `conf.Prompt`) – input for the job. Every call has a key; the value comes from
+  `--param key=value [key2=value2 ...]`, then from the `"JobParams"` section of `jobs/<JobName>.json`, then – only
+  when jobrundj runs with `-i` / `--interactive` – from a question in the console, then from the default value;
+  otherwise a `JobInputException` stops the job. Use it instead of `Console.ReadLine` (never read the console directly).
+  - `string Ask(key, question, string? defaultValue = null)`, `T Ask<T>(key, question)` (required),
+    `T Ask<T>(key, question, T defaultValue)` – int, decimal, DateTime, enums...
+  - `string AskSecret(key, question)` – not echoed, masked in the log.
+  - `bool Confirm(key, question, bool defaultValue = false)`.
+  - `string Choose(key, title, choices, string? defaultValue = null)`,
+    `IList<string> ChooseMany(key, title, choices, defaultValues = null)` (at least one item).
+  - `bool IsInteractive` – true when the user can be asked.
+  - Every value is logged (`Input env = TEST (command line)`). Provided values use the invariant format
+    (`3.5`, `2026-01-31`, `true`/`false`); `ChooseMany` takes `a,b` or a json array. Example: `docs/JobExamples/JobInput.cs`.
 
 **`JobConfiguration conf`**
 
@@ -156,7 +169,8 @@ Parser.Default.ParseArguments<MyJobOptions>(conf.JobArgs)
       .WithNotParsed(errors => throw new ArgumentException("Invalid arguments"));
 ```
 
-Do not use the option letters `j` and `d` or the names `debug`, `ui` and `pause`: jobrundj uses them.
+Do not use the option letters `j`, `d` and `i` or the names `debug`, `ui`, `interactive`, `param` and `pause`:
+jobrundj uses them. For simple values prefer `Prompt` (see above): it also works with `-i` and the json file.
 
 ## Errors, logging, exit code
 
@@ -180,6 +194,8 @@ catch (Exception ex)
 
 - Run: `jobrundj.exe -j MyJob` (Windows) or `dotnet jobrundj.dll -j MyJob` (Linux / macOS), from the jobrundj folder.
 - Live dashboard with progress bar and summary: add `--ui` (interactive terminals only; the job code does not change).
+- Jobs that use `Prompt`: add `-i` to be asked the missing values (it disables `--ui`), or pass them with
+  `--param key=value ...` / the `"JobParams"` json section for scheduled runs.
 - Debug: in VS Code open the job file and press F5 with the configuration **Debug current job file**
   (or **Debug current job file (with arguments)**). Breakpoints in the job file work.
 - Compile errors are printed in the log as `CSxxxx: message`: fix them using the rules above.

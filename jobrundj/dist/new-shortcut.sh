@@ -10,7 +10,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: bash new-shortcut.sh -j JobName [-n "Name"] [-i icon] [-a "job args"] [-o folder] [--no-ui]
+Usage: bash new-shortcut.sh -j JobName [-n "Name"] [-i icon] [-a "job args"] [-o folder] [--no-ui] [--interactive]
 
   -j, --job      job name (file name in the jobs folder, without .cs)        (required)
   -n, --name     launcher name shown under the icon (default: the job name)
@@ -19,6 +19,9 @@ Usage: bash new-shortcut.sh -j JobName [-n "Name"] [-i icon] [-a "job args"] [-o
   -o, --output   destination folder
                  (default: macOS ~/Desktop; Linux applications menu + desktop)
       --no-ui    classic colored log instead of the dashboard
+      --interactive
+                 for jobs that ask for input: runs with -i, the missing values are asked
+                 in the terminal (classic colored log instead of the dashboard)
 
 Example:
   bash new-shortcut.sh -j JobExportCsv -n "Export customers" -i ~/icons/export.png
@@ -36,6 +39,7 @@ while [ $# -gt 0 ]; do
     -a|--args)   JOB_ARGS="${2:-}"; shift 2 ;;
     -o|--output) OUTPUT="${2:-}"; shift 2 ;;
     --no-ui)     UI=""; shift ;;
+    --interactive) UI="-i"; shift ;;
     -h|--help)   usage; exit 0 ;;
     *)           usage >&2; die "unknown option $1" ;;
   esac

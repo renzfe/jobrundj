@@ -37,6 +37,17 @@ namespace jobmodeldj.Model
         public string ExecuterFileName { get { return _executerFileName; } }
         public NLog.Config.LoggingConfiguration? logConfig;
 
+        /// <summary>
+        /// Input requested by the job: values from --param key=value, from the "JobParams" section of
+        /// [JobName].json or, with -i / --interactive, asked to the user. Set by jobrundj.
+        /// </summary>
+        public IJobPrompt Prompt
+        {
+            get { return _prompt ??= new JobPrompt(this); }
+            set { _prompt = value; }
+        }
+        private IJobPrompt? _prompt;
+
         private readonly string[] _args;
         private string _id = string.Empty;
         private DirectoryInfo _appDirectoryPath;

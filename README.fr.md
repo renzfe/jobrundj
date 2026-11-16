@@ -79,12 +79,6 @@ namespace jobmodeldj.jobs
 }
 ```
 
-Exécution de JobTest avec le tableau de bord en temps réel dans Windows Terminal (`jobrundj.exe -j JobTest --ui`), pendant l'exécution et à la fin :
-
-![jobrundj --ui : JobTest en cours d'exécution, barre de progression à 20 %, compteurs et derniers messages du log](docs/Support/WindowsTerminal_WIP.png)
-
-![jobrundj --ui : résumé de JobTest terminé avec succès, avec durée, compteurs et fichiers de log](docs/Support/WindowsTerminal_CompletedOK.png)
-
 # jobrundj.exe / jobrundj.dll
 
 jobrundj est l'application console qui exécute un job.
@@ -110,11 +104,36 @@ Sous Linux ou Mac OS :
 
 **`dotnet jobrundj.dll`** **`-j`** `NomDuJob` **`--ui`**
 
+Exécution de JobTest avec le tableau de bord en temps réel dans Windows Terminal (`jobrundj.exe -j JobTest --ui`), pendant l'exécution et à la fin :
+
+![jobrundj --ui : JobTest en cours d'exécution, barre de progression à 20 %, compteurs et derniers messages du log](docs/Support/WindowsTerminal_WIP.png)
+
+![jobrundj --ui : résumé de JobTest terminé avec succès, avec durée, compteurs et fichiers de log](docs/Support/WindowsTerminal_CompletedOK.png)
+
 La barre de progression apparaît quand le job appelle `Progress(courant, total, "message")`, par exemple `Progress(i, lignes.Count, "Export des lignes")` dans une boucle. `Progress` écrit aussi une ligne de log (`Progress 680/1000 (68%) Export des lignes`), au plus une fois par point de pourcentage ou toutes les 2 secondes : il peut donc être appelé à chaque élément.
 
 `--ui` nécessite un terminal interactif (Windows Terminal, le Terminal de macOS, n'importe quel terminal Linux). Si la sortie est redirigée ou si le job est planifié, l'option est ignorée et jobrundj écrit le log dans la console comme d'habitude. Les fichiers de log sont toujours écrits.
 
 Pour lancer un job d'un double clic, créez un raccourci sur le bureau avec `new-shortcut.ps1` (Windows) ou `new-shortcut.sh` (macOS / Linux), inclus dans la distribution : voir le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#desktop-shortcuts).
+
+
+# Jobs interactifs
+
+Un job peut demander des valeurs (texte, nombres, dates, confirmations, un ou plusieurs éléments d'une liste) avec `Prompt`, par exemple `Prompt.Choose("env", "Environnement", new[] { "DEV", "TEST", "PROD" })`. Ajoutez `-i` (`--interactive`) pour répondre aux questions dans la console ; le job continue ensuite et le log reprend normalement.
+
+**`jobrundj.exe`** **`-j`** `JobInput` **`-i`**
+
+Exécution du job d'exemple JobInput dans Windows Terminal : choix des tables à exporter, puis saisie d'une date (la valeur par défaut est indiquée entre parenthèses). Chaque réponse est écrite dans le log :
+
+![jobrundj -i : JobInput demande les tables à exporter, une liste avec des cases à cocher](docs/Support/WindowsTerminal_Input_Table.png)
+
+![jobrundj -i : JobInput demande la date d'export avec une valeur par défaut, après avoir écrit les réponses précédentes dans le log](docs/Support/WindowsTerminal_Input_Date.png)
+
+Chaque valeur peut aussi être passée en ligne de commande ou dans la section `"JobParams"` du fichier json du job : ces valeurs ne sont pas demandées, ainsi le même job s'exécute depuis un planificateur sans questions.
+
+**`jobrundj.exe`** **`-j`** `JobInput` **`--param`** `env=TEST tables=Orders,Invoices`
+
+`-i` désactive `--ui` et est ignoré quand l'entrée ou la sortie sont redirigées. Détails et exemples dans le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md#asking-for-input).
 
 
 # Déboguer des jobs dans Visual Studio Code
@@ -137,6 +156,8 @@ Options de ligne de commande :
 - `-d`, `--jobsdir` dossier contenant les jobs (par défaut : `jobs` à côté de l'exécutable)
 - `--debug` compile le job avec les symboles de débogage et attend qu'un débogueur s'attache
 - `--ui` affiche un tableau de bord en temps réel avec la progression et un résumé à la fin (voir [Tableau de bord en temps réel](#tableau-de-bord-en-temps-réel))
+- `-i`, `--interactive` demande dans la console les valeurs du job non passées avec `--param` (voir [Jobs interactifs](#jobs-interactifs))
+- `--param key=value ...` valeurs d'entrée pour le job
 - `--pause` attend une touche avant de fermer la fenêtre (console interactive uniquement), utile pour les raccourcis sur le bureau
 
 `jobs/jobs.csproj` sert uniquement à VS Code pour IntelliSense (nécessite le .NET SDK) ; il n'est pas nécessaire pour exécuter les jobs.
@@ -169,6 +190,14 @@ Le dossier `.vscode`, le fichier `jobs/jobs.csproj`, le guide `DEVELOPER_GUIDE.m
 🛠️ **Si vous écrivez ou déboguez des jobs, suivez le [guide pour les développeurs de jobs](jobrundj/dist/DEVELOPER_GUIDE.md)** (en anglais). Il explique comment configurer VS Code, écrire un job, le déboguer pas à pas et contient un exemple complet (un job qui exporte le résultat d'une requête sur une base de données dans un fichier CSV). Le même guide est inclus sous le nom `DEVELOPER_GUIDE.md` dans le package de distribution.
 
 # Notes de version
+
+## v3.2.0 Date de publication : 2026-11-16
+
+- Option `-i` / `--interactive` : le job peut demander des valeurs dans la console (texte, nombres, dates, confirmations, un ou plusieurs éléments d'une liste) ; le job continue ensuite avec le log habituel
+- `Prompt` dans `Job` (`conf.Prompt`) : valeurs d'entrée depuis `--param cle=valeur`, depuis la section `"JobParams"` du fichier json du job, depuis la console avec `-i` ou depuis une valeur par défaut
+- Option `--param cle=valeur` pour passer les valeurs d'entrée sans questions (par exemple pour les exécutions planifiées)
+- Option `-Interactive` / `--interactive` dans `new-shortcut.ps1` / `new-shortcut.sh`
+- Job d'exemple `JobInput`
 
 ## v3.1.0 Date de publication : 2026-11-15
 
